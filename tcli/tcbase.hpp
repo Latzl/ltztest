@@ -120,10 +120,10 @@ inline Node& getRoot() {
 #define TC_SEQ_TO_STRS(seq) BOOST_PP_SEQ_FOR_EACH(TC_OPR1, _, seq)
 
 #define TC_OPR(s, state, x) BOOST_PP_CAT(BOOST_PP_CAT(state, x), _)
-#define TC_GEN_NAME(prefix, ...) BOOST_PP_CAT(prefix, BOOST_PP_SEQ_FOLD_LEFT(TC_OPR, BOOST_PP_CAT(BOOST_PP_SEQ_HEAD(BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)), _), BOOST_PP_SEQ_TAIL(BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))))
-#define TC_GEN_NAME_FUNC(...) TC_GEN_NAME(_tcf_, __VA_ARGS__)
-#define TC_GEN_NAME_REGTAG(...) TC_GEN_NAME(_tcr_, __VA_ARGS__)
-#define TC_GEN_NAME_REG(...) TC_GEN_NAME(tcr_, __VA_ARGS__)
+#define TC_GEN_NAME(prefix, ...) BOOST_PP_CAT(prefix##_, BOOST_PP_SEQ_FOLD_LEFT(TC_OPR, BOOST_PP_CAT(BOOST_PP_SEQ_HEAD(BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)), _), BOOST_PP_SEQ_TAIL(BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__))))
+#define TC_GEN_NAME_FUNC(...) TC_GEN_NAME(_tcf, __VA_ARGS__)
+#define TC_GEN_NAME_REGTAG(...) TC_GEN_NAME(_tcr, __VA_ARGS__)
+#define TC_GEN_NAME_REG(...) TC_GEN_NAME(tcr, __VA_ARGS__)
 
 #define TCFUNC(...)                                                                                                \
     namespace tc {                                                                                                 \
