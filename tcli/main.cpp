@@ -5,6 +5,9 @@
 #include <sstream>
 #include "tcbase.hpp"
 
+#include <boost/program_options.hpp>
+namespace bpo = boost::program_options;
+
 void tclist(const std::vector<std::string>& args) {
     std::vector<std::string> args1 = args;
     tc::getRoot().listLastCmdOption(args1);
@@ -16,45 +19,64 @@ void tclist(const std::vector<std::string>& args) {
 
 const std::string g_usage = R"(
 Usage:
-    tcli [options] <command> [args]
+    tcli [options] <func path> [args]
 Options:
-    -h          Show this message and exit.
-    -l,         List all command depend on args.
+    --help,-h                   Show this message and exit.
+    --list,-l                   List all command depend on args.
+    --fpath,-f=<func path>      Set function path to be executed.
+    --silence,-s                Silence mode.
+    --verbose,-v                Verbose mode.
 )";
+bool g_bSilence = false;
+bool g_bVerbose = false;
 
 int main(int argc, char* argv[]) {
-    std::vector<std::string> vArgs;
-    for (int i = 1; i < argc; i++) {
-        vArgs.push_back(argv[i]);
-    }
-    std::size_t argidx = 0;
-    for (; argidx < vArgs.size(); argidx++) {
-        std::string s = vArgs[argidx];
-        if (s[0] == '-') {
-            if (s == "-h") {
-                std::cout << g_usage << std::endl;
-                return 0;
-            }
-            if (s == "-l") {
-                std::vector<std::string> args_l(vArgs.begin() + argidx + 1, vArgs.end());
-                tclist(args_l);
-                return 0;
-            }
-        }else{
-            break;
+    std::vector<std::string> funcpath;
+    try {
+        bpo::options_description desc{"Options"};
+        desc.add_options()  //
+            ("help,h", "Show this message and exit.")  //
+            ("list,l", bpo::bool_switch(), "List all command depend on args.")  //
+            ("fpath,f", bpo::value<std::vector<std::string>>()->default_value(funcpath, "")->multitoken(), "Set function path to be executed.")  //
+            ("silence,s", bpo::bool_switch(&g_bSilence), "Silence mode.")  //
+            ("verbose,v", bpo::bool_switch(&g_bVerbose), "Verbose mode.");
+
+        bpo::positional_options_description posDesc;
+        posDesc.add("fpath", -1);
+
+        bpo::command_line_parser parser(argc, argv);
+        parser.options(desc).positional(posDesc);
+        bpo::parsed_options parsedOpts = parser.run();
+
+        bpo::variables_map vm;
+        bpo::store(parsedOpts, vm);
+        bpo::notify(vm);
+
+        if (vm.count("help")) {
+            std::cout << g_usage << std::endl;
+            return 0;
         }
+        funcpath = vm["fpath"].as<std::vector<std::string>>();
+        if (vm["list"].as<bool>()) {
+            std::vector<std::string> funcpath2List(funcpath.begin(), funcpath.end());
+            tclist(funcpath);
+            return 0;
+        }
+    } catch (const bpo::error& e) {
+        std::cerr << e.what() << std::endl;
+        return -1;
     }
 
-    std::vector<std::string> args1(vArgs.begin() + argidx, vArgs.end());
-    tc::func func = tc::getRoot().getFunc(args1);
+    std::vector<std::string> funcpath2parse(funcpath.begin(), funcpath.end());
+    tc::func func = tc::getRoot().getFunc(funcpath2parse);
     if (!tc::getRoot().ok_) {
         std::cerr << tc::getRoot().errMsg_ << std::endl;
         exit(-1);
     }
     if (func) {
-        func(args1);
+        func(funcpath2parse);
     } else {
-        tclist(vArgs);
+        tclist(funcpath);
     }
 }
 
