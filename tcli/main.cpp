@@ -3,17 +3,19 @@
  */
 #include <iostream>
 #include <sstream>
+#include "tcli.hpp"
 #include "tcbase.hpp"
 
 #include <boost/program_options.hpp>
 namespace bpo = boost::program_options;
 
-void tclist(const std::vector<std::string>& args) {
-    std::vector<std::string> args1 = args;
-    tc::getRoot().listLastCmdOption(args1);
-    if (!tc::getRoot().ok_) {
-        std::cerr << tc::getRoot().errMsg_ << std::endl;
-        exit(-1);
+int tcli::argc = 0;
+char** tcli::argv = nullptr;
+
+void tcli_list(const std::vector<std::string>& vPath) {
+    std::string s = tcli::get_children_name(tcli::toPath(vPath));
+    if (s.size()) {
+        std::cout << s << std::endl;
     }
 }
 
@@ -31,13 +33,16 @@ bool g_bSilence = false;
 bool g_bVerbose = false;
 
 int main(int argc, char* argv[]) {
-    std::vector<std::string> funcpath;
+    tcli::argc = argc;
+    tcli::argv = (char**)argv;
+
+    std::vector<std::string> vArgs;
     try {
         bpo::options_description desc{"Options"};
         desc.add_options()  //
             ("help,h", "Show this message and exit.")  //
             ("list,l", bpo::bool_switch(), "List all command depend on args.")  //
-            ("fpath,f", bpo::value<std::vector<std::string>>()->default_value(funcpath, "")->multitoken(), "Set function path to be executed.")  //
+            ("fpath,f", bpo::value<std::vector<std::string>>()->default_value(vArgs, "")->multitoken(), "Set function path to be executed.")  //
             ("silence,s", bpo::bool_switch(&g_bSilence), "Silence mode.")  //
             ("verbose,v", bpo::bool_switch(&g_bVerbose), "Verbose mode.");
 
@@ -56,10 +61,9 @@ int main(int argc, char* argv[]) {
             std::cout << g_usage << std::endl;
             return 0;
         }
-        funcpath = vm["fpath"].as<std::vector<std::string>>();
+        vArgs = vm["fpath"].as<std::vector<std::string>>();
         if (vm["list"].as<bool>()) {
-            std::vector<std::string> funcpath2List(funcpath.begin(), funcpath.end());
-            tclist(funcpath);
+            tcli_list(vArgs);
             return 0;
         }
     } catch (const bpo::error& e) {
@@ -67,33 +71,26 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    std::vector<std::string> funcpath2parse(funcpath.begin(), funcpath.end());
-    tc::func func = tc::getRoot().getFunc(funcpath2parse);
-    if (!tc::getRoot().ok_) {
-        std::cerr << tc::getRoot().errMsg_ << std::endl;
-        exit(-1);
+    auto pr = tcli::get_data(vArgs.begin(), vArgs.end());
+    if (!pr.first) {
+        tcli_list(vArgs);
+        return -1;
     }
-    if (func) {
-        func(funcpath2parse);
-    } else {
-        tclist(funcpath);
-    }
+    pr.first->f(std::vector<std::string>(pr.second, vArgs.end()));
 }
 
 /* define test function below */
 
-TCFUNC(a, b, c) {
-    std::cout << "a-b-c" << std::endl;
+TCLIF(echo_args) {
+    for (const auto& s : tcArgs) {
+        std::cout << s << std::endl;
+    }
 }
 
-TCFUNC(a, b) {
-    std::cout << "a-b" << std::endl;
+TCLIF(a, b_c) {
+    std::cout << "a, b_c" << std::endl;
 }
 
-TCFUNC(a, b, d) {
-    std::cout << "a-b-d" << std::endl;
-}
-
-TCFUNC(d, e, f, g) {
-    std::cout << "d-e-f-g" << std::endl;
+TCLIF(a_b, c) {
+    std::cout << "a_b, c" << std::endl;
 }
