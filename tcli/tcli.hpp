@@ -25,8 +25,8 @@ struct Data {
 };
 
 struct to_data_translator {
-    typedef Data *internal_type;
-    typedef Data *external_type;
+    using internal_type = Data *;
+    using external_type = Data *;
     boost::optional<external_type> get_value(internal_type p) {
         return p;
     }
@@ -50,7 +50,7 @@ inline std::string toPath(std::string path, char delimiter = '/') {
 template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
 inline std::string toPath(It itl, It itr) {
     std::string path;
-    while(itl != itr){
+    while (itl != itr) {
         path += *itl + ".";
         itl = std::next(itl);
     }
@@ -87,9 +87,9 @@ inline void print_tree_impl(func_tree &tree, int depth = 0) {
     }
 }
 
-/* 
+/*
     @brief print tree
-    @details print tree and children, format like: 
+    @details print tree and children, format like:
         tree(this, ptr to data)
         |--child_key(child_this, ptr to child_data)
         |----key(0x123456, 0xabcdef)
@@ -119,6 +119,10 @@ inline std::pair<Data *, It> get_data(It itl, It itr, func_tree &tree = get_func
     return get_data(std::next(itl), itr, *opt);
 }
 
+/*
+    @brief put ptr to data
+    @note prefer to use this function rather than boost::property_tree:put to ensure ptr to data of path node is null
+ */
 template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
 inline func_tree &put_data(It itl, It itr, Data *data = nullptr, func_tree &tree = get_func_tree()) {
     if (itl > itr) {
