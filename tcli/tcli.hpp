@@ -86,25 +86,46 @@ inline std::pair<Data *, args_container::iterator> get_data(args_container::iter
     return get_data(itl + 1, itr, *opt);
 }
 
+inline std::vector<std::string> split(const std::string &src, const std::string &delimiter) {
+    if (src.empty()) {
+        return {};
+    }
+    if (delimiter.empty()) {
+        return {src};
+    }
+    std::vector<std::string> vRet{};
+    size_t last = 0;
+    size_t next = 0;
+    while ((next = src.find(delimiter, last)) != std::string::npos) {
+        vRet.emplace_back(src.substr(last, next - last));
+        last = next + delimiter.size();
+    }
+    if (last < src.size()) {
+        vRet.push_back(src.substr(last));
+    } else if (last == src.size()) {
+        vRet.push_back("");
+    }
+    return vRet;
+}
 }  // namespace tcli
 
-#define TCLI_GEN_NAME(prefix, ...) BOOST_PP_CAT(prefix##_, LTZ_PP_CAT_WITH_UNDERLINE(__VA_ARGS__))
+#define TCLI_GEN_NAME(prefix, ...) BOOST_PP_CAT(prefix##_, LTZ_PP_CAT_WITH_SEP(XTCX, __VA_ARGS__))
 #define TCLI_GEN_NAME_REG(...) TCLI_GEN_NAME(_tcli_reg, __VA_ARGS__)
 #define TCLI_GEN_NAME_REG_OBJ(...) TCLI_GEN_NAME(tcli_reg_obj, __VA_ARGS__)
 
-#define TCLIF(...)                                                                              \
-    namespace tcli {                                                                            \
-    struct TCLI_GEN_NAME_REG(__VA_ARGS__) : public Data {                                       \
-        TCLI_GEN_NAME_REG(__VA_ARGS__)() {                                                      \
-            std::string func_path = BOOST_PP_STRINGIZE(LTZ_PP_CAT_WITH_UNDERLINE(__VA_ARGS__)); \
-            func_path = toPath(func_path, '_');                                                 \
-            tc_file = __FILE__;                                                                 \
-            tc_line = __LINE__;                                                                 \
-            get_func_tree().put(func_path, this, to_data_translator());                         \
-        }                                                                                       \
-        void f(const std::vector<std::string> &tcArgs) override;                                \
-    } TCLI_GEN_NAME_REG_OBJ(__VA_ARGS__);                                                       \
-    }                                                                                           \
+#define TCLIF(...)                                                                                                     \
+    namespace tcli {                                                                                                   \
+    struct TCLI_GEN_NAME_REG(__VA_ARGS__) : public Data {                                                              \
+        TCLI_GEN_NAME_REG(__VA_ARGS__)() {                                                                             \
+            std::vector<std::string> vpath = split(BOOST_PP_STRINGIZE(LTZ_PP_CAT_WITH_SEP(XTCX,__VA_ARGS__)), "XTCX"); \
+            std::string spath = toPath(vpath);                                                                         \
+            tc_file = __FILE__;                                                                                        \
+            tc_line = __LINE__;                                                                                        \
+            get_func_tree().put(spath, this, to_data_translator());                                                    \
+        }                                                                                                              \
+        void f(const std::vector<std::string> &tcArgs) override;                                                       \
+    } TCLI_GEN_NAME_REG_OBJ(__VA_ARGS__);                                                                              \
+    }                                                                                                                  \
     void tcli::TCLI_GEN_NAME_REG(__VA_ARGS__)::f(const std::vector<std::string> &tcArgs)
 
 #endif

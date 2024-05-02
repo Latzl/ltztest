@@ -4,7 +4,6 @@
 #include <iostream>
 #include <sstream>
 #include "tcli.hpp"
-#include "tcbase.hpp"
 
 #include <boost/program_options.hpp>
 namespace bpo = boost::program_options;
