@@ -12,7 +12,7 @@ int tcli::argc = 0;
 char** tcli::argv = nullptr;
 
 void tcli_list(const std::vector<std::string>& vPath) {
-    std::string s = tcli::get_children_name(tcli::toPath(vPath));
+    std::string s = tcli::get_children_name(tcli::toPath(vPath.begin(), vPath.end()));
     if (s.size()) {
         std::cout << s << std::endl;
     }
@@ -72,24 +72,33 @@ int main(int argc, char* argv[]) {
 
     auto pr = tcli::get_data(vArgs.begin(), vArgs.end());
     if (!pr.first) {
+        std::cerr << "no such path: " << tcli::toPath(vArgs.begin(), vArgs.end()) << std::endl;
         tcli_list(vArgs);
         return -1;
     }
-    pr.first->f(std::vector<std::string>(pr.second, vArgs.end()));
+    return pr.first->f(std::vector<std::string>(pr.second, vArgs.end()));
 }
 
 /* define test function below */
+
+TCLIF(print_tree) {
+    tcli::print_tree();
+    return 0;
+}
 
 TCLIF(echo_args) {
     for (const auto& s : tcArgs) {
         std::cout << s << std::endl;
     }
+    return 0;
 }
 
 TCLIF(a, b_c) {
     std::cout << "a, b_c" << std::endl;
+    return 0;
 }
 
 TCLIF(a_b, c) {
     std::cout << "a_b, c" << std::endl;
+    return 0;
 }

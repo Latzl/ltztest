@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
 
 #include <boost/preprocessor.hpp>
 #include <boost/property_tree/ptree.hpp>
@@ -17,10 +18,10 @@ extern int argc;
 extern char **argv;
 
 struct Data {
-    virtual void f(const std::vector<std::string> &tcArgs) = 0;
-    std::string tc_desc;
-    std::string tc_file;
-    int tc_line{0};
+    virtual int f(const std::vector<std::string> &tcArgs) = 0;
+    std::string desc_;
+    std::string file_;
+    int line_{0};
 };
 
 struct to_data_translator {
@@ -46,10 +47,12 @@ inline std::string toPath(std::string path, char delimiter = '/') {
     return path;
 }
 
-inline std::string toPath(const args_container &v) {
+template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
+inline std::string toPath(It itl, It itr) {
     std::string path;
-    for (auto &s : v) {
-        path += toPath(s) + ".";
+    while(itl != itr){
+        path += *itl + ".";
+        itl = std::next(itl);
     }
     if (path.size()) {
         path.pop_back();
@@ -72,7 +75,37 @@ inline std::string get_children_name(const std::string &path) {
     return s;
 }
 
-inline std::pair<Data *, args_container::iterator> get_data(args_container::iterator itl, args_container::iterator itr, func_tree &tree = get_func_tree()) {
+inline void print_tree_impl(func_tree &tree, int depth = 0) {
+    for (auto &pr : tree) {
+        const std::string key_child = pr.first;
+        func_tree &tree_child = pr.second;
+        Data *data_child = tree_child.get_value<Data *>();
+        std::stringstream ss;
+        ss << "|" << std::string(depth * 2, '-') << key_child << "(0x" << std::hex << (long int)&tree_child << ", 0x" << (long int)data_child << ")";
+        std::cout << ss.str() << std::endl;
+        print_tree_impl(tree_child, depth + 1);
+    }
+}
+
+/* 
+    @brief print tree
+    @details print tree and children, format like: 
+        tree(this, ptr to data)
+        |--child_key(child_this, ptr to child_data)
+        |----key(0x123456, 0xabcdef)
+        ...
+    @note use put_data to ensure ptr to data of path node is null
+ */
+inline void print_tree(func_tree &tree = get_func_tree()) {
+    Data *data = tree.get_value<Data *>();
+    std::stringstream ss;
+    ss << "tree(0x" << std::hex << (long int)&tree << ", 0x" << (long int)data << ")";
+    std::cout << ss.str() << std::endl;
+    print_tree_impl(tree, 1);
+}
+
+template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
+inline std::pair<Data *, It> get_data(It itl, It itr, func_tree &tree = get_func_tree()) {
     if (itl > itr) {
         return {nullptr, itr};
     }
@@ -83,7 +116,23 @@ inline std::pair<Data *, args_container::iterator> get_data(args_container::iter
     if (!opt) {
         return {tree.get_value<Data *>(to_data_translator()), itl};
     }
-    return get_data(itl + 1, itr, *opt);
+    return get_data(std::next(itl), itr, *opt);
+}
+
+template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
+inline func_tree &put_data(It itl, It itr, Data *data = nullptr, func_tree &tree = get_func_tree()) {
+    if (itl > itr) {
+        return tree;
+    }
+    if (itl == itr) {
+        tree.put_value(data, to_data_translator());
+        return tree;
+    }
+    auto opt = tree.get_child_optional(*itl);
+    if (!opt) {
+        opt = tree.put_child(*itl, func_tree{nullptr});
+    }
+    return put_data(std::next(itl), itr, data, *opt);
 }
 
 inline std::vector<std::string> split(const std::string &src, const std::string &delimiter) {
@@ -118,14 +167,13 @@ inline std::vector<std::string> split(const std::string &src, const std::string 
     struct TCLI_GEN_NAME_REG(__VA_ARGS__) : public Data {                                                              \
         TCLI_GEN_NAME_REG(__VA_ARGS__)() {                                                                             \
             std::vector<std::string> vpath = split(BOOST_PP_STRINGIZE(LTZ_PP_CAT_WITH_SEP(XTCX,__VA_ARGS__)), "XTCX"); \
-            std::string spath = toPath(vpath);                                                                         \
-            tc_file = __FILE__;                                                                                        \
-            tc_line = __LINE__;                                                                                        \
-            get_func_tree().put(spath, this, to_data_translator());                                                    \
+            file_ = __FILE__;                                                                                          \
+            line_ = __LINE__;                                                                                          \
+            put_data(vpath.begin(), vpath.end(), this);                                                                \
         }                                                                                                              \
-        void f(const std::vector<std::string> &tcArgs) override;                                                       \
+        int f(const std::vector<std::string> &tcArgs) override;                                                        \
     } TCLI_GEN_NAME_REG_OBJ(__VA_ARGS__);                                                                              \
     }                                                                                                                  \
-    void tcli::TCLI_GEN_NAME_REG(__VA_ARGS__)::f(const std::vector<std::string> &tcArgs)
+    int tcli::TCLI_GEN_NAME_REG(__VA_ARGS__)::f(const std::vector<std::string> &tcArgs)
 
 #endif

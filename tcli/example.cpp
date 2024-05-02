@@ -5,6 +5,7 @@
 
 TCLIF_EXAMPLE(print, hello_world) {
     std::cout << "Hello, world!" << std::endl;
+    return 0;
 }
 
 TCLIF_EXAMPLE(add) {
@@ -12,4 +13,9 @@ TCLIF_EXAMPLE(add) {
     a = std::stoi(tcArgs[0]);
     b = std::stoi(tcArgs[1]);
     std::cout << a + b << std::endl;
+    return 0;
+}
+
+TCLIF_EXAMPLE(set, return_value){
+    return std::stoi(tcArgs[0]);
 }
