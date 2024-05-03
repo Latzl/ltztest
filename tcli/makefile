@@ -11,6 +11,7 @@ LIBS += -Wl,-Bstatic -lboost_program_options -Wl,-Bdynamic
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(wildcard *.cpp))
 
 HEADERS += $(wildcard *.hpp)
+HEADERS += $(wildcard ../third_party/ltz/*/*.hpp)
 
 $(OBJ_DIR)/%.o: %.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)

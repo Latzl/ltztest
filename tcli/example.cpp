@@ -1,21 +1,41 @@
 #include "tcli.hpp"
 #include <iostream>
 
-#define TCLIF_EXAMPLE(...) TCLIF(example, __VA_ARGS__)
+#define TCLI_F_EXAMPLE(...) TCLI_F(example, __VA_ARGS__)
 
-TCLIF_EXAMPLE(print, hello_world) {
+TCLI_F_EXAMPLE(print, hello_world) {
     std::cout << "Hello, world!" << std::endl;
     return 0;
 }
 
-TCLIF_EXAMPLE(add) {
+TCLI_F_EXAMPLE(add) {
     int a, b;
-    a = std::stoi(tcArgs[0]);
-    b = std::stoi(tcArgs[1]);
+    a = std::stoi(lpiArgs[0]);
+    b = std::stoi(lpiArgs[1]);
     std::cout << a + b << std::endl;
     return 0;
 }
 
-TCLIF_EXAMPLE(set, return_value){
-    return std::stoi(tcArgs[0]);
+TCLI_F_EXAMPLE(set, return_value){
+    return std::stoi(lpiArgs[0]);
+}
+
+TCLI_F_EXAMPLE(a, b_c) {
+    std::cout << "a, b_c" << std::endl;
+    return 0;
+}
+
+TCLI_F_EXAMPLE(a_b, c) {
+    std::cout << "a_b, c" << std::endl;
+    return 0;
+}
+
+TCLI_F_EXAMPLE(a, b) {
+    std::cout << "a, b" << std::endl;
+    return 0;
+}
+
+TCLI_F_EXAMPLE(a, b, c) {
+    std::cout << "a, b, c" << std::endl;
+    return 0;
 }

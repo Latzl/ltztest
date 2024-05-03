@@ -14,7 +14,8 @@ int tcli::argc = 0;
 char** tcli::argv = nullptr;
 
 void tcli_list(const std::vector<std::string>& vPath) {
-    std::string s = tcli::get_children_name(tcli::toPath(vPath.begin(), vPath.end()));
+    // std::string s = tcli::get_children_name(tcli::toPath(vPath.begin(), vPath.end()));
+    std::string s = tcli::get_register().list_children(vPath.begin(), vPath.end());
     if (s.size()) {
         std::cout << s << std::endl;
     }
@@ -72,37 +73,11 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    auto pr = tcli::get_data(vArgs.begin(), vArgs.end());
-    if (!pr.first) {
-        std::cerr << "no such path: " << tcli::toPath(vArgs.begin(), vArgs.end()) << std::endl;
+    auto &reg = tcli::get_register();
+    int r = reg.run(vArgs.begin(), vArgs.end());
+    if (!reg.ok_) {
         tcli_list(vArgs);
         return -1;
-    }
-
-    auto tStart = std::chrono::steady_clock::now();
-    int r = pr.first->f(std::vector<std::string>(pr.second, vArgs.end()));
-    auto tEnd = std::chrono::steady_clock::now();
-
-    /* print return value, time cost */
-    {
-        auto tDiff = std::chrono::duration_cast<std::chrono::nanoseconds>(tEnd - tStart);
-        double ns = tDiff.count();
-        std::string unit;
-        if (ns < 1e3) {
-            unit = "ns";
-        } else if (ns < 1e6) {
-            ns /= 1e3;
-            unit = "us";
-        } else if (ns < 1e9) {
-            ns /= 1e6;
-            unit = "ms";
-        } else {
-            ns /= 1e9;
-            unit = "s";
-        }
-        std::cout << "=======" << std::endl;
-        std::cout << "return value: " << r << std::endl;
-        std::cout << "time cost: " << std::fixed << std::setprecision(2) << ns << unit << std::endl;
     }
 
     return r;
@@ -110,24 +85,15 @@ int main(int argc, char* argv[]) {
 
 /* define test function below */
 
-TCLIF(print_tree) {
-    tcli::print_tree();
+TCLI_F(toStr_registered) {
+    std::cout << tcli::get_register().toStr_registered() << std::endl;
     return 0;
 }
 
-TCLIF(echo_args) {
-    for (const auto& s : tcArgs) {
+TCLI_F(echo_args) {
+    for (const auto& s : lpiArgs) {
         std::cout << s << std::endl;
     }
     return 0;
 }
 
-TCLIF(a, b_c) {
-    std::cout << "a, b_c" << std::endl;
-    return 0;
-}
-
-TCLIF(a_b, c) {
-    std::cout << "a_b, c" << std::endl;
-    return 0;
-}
