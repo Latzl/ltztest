@@ -102,7 +102,13 @@ class Register {
 
         Timer timer;
         if (!silence_) {
-            std::cout << "======== " << path2str(itl, itr) << " ========" << std::endl;
+            std::stringstream ss;
+            ss << "======== " << path2str(itl, pr.second);
+            if (pr.second != itr) {
+                ss << " " << join(std::vector<std::string>(pr.second, itr), " ");
+            }
+            ss << " ========";
+            std::cout << ss.str() << std::endl;
         }
         int r = pr.first->f(std::vector<std::string>(pr.second, itr));
         auto pr_timer = timer.elapsed();
@@ -170,7 +176,7 @@ class Register {
         ss << "tree(0x" << std::hex << (long int)&rt_ << ", 0x" << (long int)data << ")\n";
         toStr_registered_impl(ss, rt_, 1);
         std::string s = ss.str();
-        if(s.size()){
+        if (s.size()) {
             s.pop_back();
         }
         return s;
