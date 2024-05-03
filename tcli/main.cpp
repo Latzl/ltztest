@@ -3,6 +3,8 @@
  */
 #include <iostream>
 #include <sstream>
+#include <chrono>
+#include <iomanip>
 #include "tcli.hpp"
 
 #include <boost/program_options.hpp>
@@ -76,7 +78,34 @@ int main(int argc, char* argv[]) {
         tcli_list(vArgs);
         return -1;
     }
-    return pr.first->f(std::vector<std::string>(pr.second, vArgs.end()));
+
+    auto tStart = std::chrono::steady_clock::now();
+    int r = pr.first->f(std::vector<std::string>(pr.second, vArgs.end()));
+    auto tEnd = std::chrono::steady_clock::now();
+
+    /* print return value, time cost */
+    {
+        auto tDiff = std::chrono::duration_cast<std::chrono::nanoseconds>(tEnd - tStart);
+        double ns = tDiff.count();
+        std::string unit;
+        if (ns < 1e3) {
+            unit = "ns";
+        } else if (ns < 1e6) {
+            ns /= 1e3;
+            unit = "us";
+        } else if (ns < 1e9) {
+            ns /= 1e6;
+            unit = "ms";
+        } else {
+            ns /= 1e9;
+            unit = "s";
+        }
+        std::cout << "=======" << std::endl;
+        std::cout << "return value: " << r << std::endl;
+        std::cout << "time cost: " << std::fixed << std::setprecision(2) << ns << unit << std::endl;
+    }
+
+    return r;
 }
 
 /* define test function below */
