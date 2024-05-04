@@ -169,12 +169,16 @@ class Register {
             ...
         @note use put_data to ensure ptr to data of path node is null
      */
-    inline std::string toStr_registered() {
+    inline std::string toStr_registered(int level = 0, const std::string &tree_name = "tree") {
         ok_ = true;
         Data *data = rt_.get_value<Data *>();
         std::stringstream ss;
-        ss << "tree(0x" << std::hex << (long int)&rt_ << ", 0x" << (long int)data << ")\n";
-        toStr_registered_impl(ss, rt_, 1);
+        ss << tree_name;
+        if (level > 0) {
+            ss << "(0x" << std::hex << (long int)&rt_ << ", 0x" << (long int)data << ")";
+        }
+        ss << "\n";
+        toStr_registered_impl(ss, rt_, level, 1);
         std::string s = ss.str();
         if (s.size()) {
             s.pop_back();
@@ -252,13 +256,17 @@ class Register {
         }
     }
 
-    inline std::stringstream &toStr_registered_impl(std::stringstream &ss, reg_tree &tree, int depth = 0) {
+    inline std::stringstream &toStr_registered_impl(std::stringstream &ss, reg_tree &tree, int level = 0, int depth = 0) {
         for (auto &pr : tree) {
             const std::string key_child = pr.first;
             reg_tree &tree_child = pr.second;
             Data *data_child = tree_child.get_value<Data *>();
-            ss << "|" << std::string(depth * 2, '-') << key_child << "(0x" << std::hex << (long int)&tree_child << ", 0x" << (long int)data_child << ")\n";
-            toStr_registered_impl(ss, tree_child, depth + 1);
+            ss << std::string(depth * 2, ' ') << key_child;
+            if (level > 0) {
+                ss << "(0x" << std::hex << (long int)&tree_child << ", 0x" << (long int)data_child << ")";
+            }
+            ss << "\n";
+            toStr_registered_impl(ss, tree_child, level, depth + 1);
         }
         return ss;
     }
