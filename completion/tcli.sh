@@ -21,7 +21,7 @@ _tcli_completion() {
     # log2Comp "\ncur: ${COMP_WORDS[COMP_CWORD]}\nprev: ${COMP_WORDS[COMP_CWORD - 1]}\n2: $2\n3: $3"
 
     local temp_words="${COMP_WORDS[@]:0:$COMP_CWORD}"
-    local output=$(${temp_words[@]} -l -s)
+    local output=$(${temp_words[@]} --list --silence)
     COMPREPLY=($(compgen -W "$output" -- "$2"))
 }
 

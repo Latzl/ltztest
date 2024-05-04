@@ -11,10 +11,10 @@ TCLI_OPT_F(tcli) {
     boost::program_options::options_description desc("tcli");
     desc.add_options()  //
         ("help,h", "Show this message and exit.")  //
-        ("list,l", boost::program_options::bool_switch(), "List sub path of current given path.")  //
-        ("list-all,L", boost::program_options::bool_switch(), "List all register function.")  //
+        ("list,t", boost::program_options::bool_switch(), "List sub path of current given path.")  //
+        ("list-all,T", boost::program_options::bool_switch(), "List all register function.")  //
         ("fpath,f", boost::program_options::value<std::vector<std::string>>()->default_value(args, "")->multitoken(), "Set function path to be executed.")  //
-        ("silenc,s", boost::program_options::bool_switch(), "Silenc mode.")  //
+        ("silence,s", boost::program_options::bool_switch(), "Silenc mode.")  //
         ("verbose,v", boost::program_options::bool_switch(), "Verbose mode.")  //
         ;
     auto& opt = tcli::opt::Opt::instance();
