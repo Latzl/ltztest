@@ -226,6 +226,9 @@ class Register {
         if (itl == itr) {
             return {tree.get_value<Data *>(to_data_translator()), itl};
         }
+        if (*itl == "--") {
+            return {tree.get_value<Data *>(to_data_translator()), std::next(itl)};
+        }
         auto opt = tree.get_child_optional(*itl);
         if (!opt) {
             return {tree.get_value<Data *>(to_data_translator()), itl};
