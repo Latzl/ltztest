@@ -331,17 +331,17 @@ inline Register &get_register(const std::string &name) {
 #define LTZ_PI_GEN_NAME_REG(name, ...) LTZ_PI_GEN_NAME(_lpi_reg_##name, __VA_ARGS__)
 #define LTZ_PI_GEN_NAME_REG_OBJ(name, ...) LTZ_PI_GEN_NAME(lpi_reg_obj_##name, __VA_ARGS__)
 
-#define LTZ_PI_F(name, ...)                                                                                               \
-    struct LTZ_PI_GEN_NAME_REG(name, __VA_ARGS__) : public ltz::proc_init::Data {                                         \
-        LTZ_PI_GEN_NAME_REG(name, __VA_ARGS__)() {                                                                        \
-            std::vector<std::string> vpath = ltz::proc_init::split(BOOST_PP_STRINGIZE(LTZ_PI_CAT(__VA_ARGS__)), "XLPIX"); \
-            file_ = __FILE__;                                                                                             \
-            line_ = __LINE__;                                                                                             \
-            auto &reg = ltz::proc_init::get_register(BOOST_PP_STRINGIZE(name));                                           \
-            reg.put(vpath.begin(), vpath.end(), this);                                                                    \
-        }                                                                                                                 \
-        int f(const std::vector<std::string> &lpiArgs) override;                                                          \
-    } LTZ_PI_GEN_NAME_REG_OBJ(name, __VA_ARGS__);                                                                         \
+#define LTZ_PI_F(name, ...)                                                                                                 \
+    struct LTZ_PI_GEN_NAME_REG(name, __VA_ARGS__) : public ::ltz::proc_init::Data {                                         \
+        LTZ_PI_GEN_NAME_REG(name, __VA_ARGS__)() {                                                                          \
+            std::vector<std::string> vpath = ::ltz::proc_init::split(BOOST_PP_STRINGIZE(LTZ_PI_CAT(__VA_ARGS__)), "XLPIX"); \
+            file_ = __FILE__;                                                                                               \
+            line_ = __LINE__;                                                                                               \
+            auto &reg = ::ltz::proc_init::get_register(BOOST_PP_STRINGIZE(name));                                           \
+            reg.put(vpath.begin(), vpath.end(), this);                                                                      \
+        }                                                                                                                   \
+        int f(const std::vector<std::string> &lpiArgs) override;                                                            \
+    } LTZ_PI_GEN_NAME_REG_OBJ(name, __VA_ARGS__);                                                                           \
     int LTZ_PI_GEN_NAME_REG(name, __VA_ARGS__)::f(const std::vector<std::string> &lpiArgs)
 
 #endif
