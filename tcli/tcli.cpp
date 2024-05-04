@@ -7,6 +7,7 @@ int argc = 0;
 char** argv = nullptr;
 std::vector<std::string> args;
 
+/* define options of tcli */
 TCLI_OPT_F(tcli) {
     boost::program_options::options_description desc("tcli");
     desc.add_options()  //
@@ -25,7 +26,7 @@ TCLI_OPT_F(tcli) {
 
 }  // namespace tcli
 
-/* define test function below */
+/* define function below */
 TCLI_F(toStr_registered_debug) {
     std::cout << tcli::get_register().toStr_registered(1, "root") << std::endl;
     return 0;

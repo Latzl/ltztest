@@ -5,8 +5,9 @@ OBJ_DIR = $(BUILD_DIR)/obj
 TARGET_DIR = $(BUILD_DIR)/bin
 TARGET = $(TARGET_DIR)/tcli
 
-LIBS += -Wl,-Bstatic -lboost_program_options -Wl,-Bdynamic
+LIBS += -Wl,-Bstatic -lboost_program_options -lgtest -Wl,-Bdynamic
 # LIBS += -lboost_program_options
+LIBS += -lpthread
 
 OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(wildcard *.cpp))
 
