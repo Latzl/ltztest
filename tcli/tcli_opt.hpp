@@ -40,7 +40,7 @@ class Opt {
         for (auto& opt_desc : opt_desc_list_) {
             opt_desc_.add(opt_desc);
         }
-        pparser_->options(opt_desc_).positional(opt_pos_desc_);
+        pparser_->options(opt_desc_).positional(opt_pos_desc_).allow_unregistered();
     }
     inline void parse() {
         pparsed_opts_ = new boost::program_options::parsed_options(pparser_->run());
