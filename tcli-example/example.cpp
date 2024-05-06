@@ -1,10 +1,16 @@
 #include "common/tcli.hpp"
 #include <iostream>
+#include "../declare/module_example.hpp"
 
 #define TCLI_F_EXAMPLE(...) TCLI_F(example, __VA_ARGS__)
 
 TCLI_F_EXAMPLE(print, hello_world) {
     std::cout << "Hello, world!" << std::endl;
+    return 0;
+}
+
+TCLI_F_EXAMPLE(module, print_module_example){
+    print_module_example();
     return 0;
 }
 

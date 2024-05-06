@@ -31,6 +31,12 @@ $(OBJ_DIR)/gtest/%.o: ./gtest/%.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)/gtest
 	$(CXX) $(FLAGS) -c $< -o $@
 
+HEADERS += $(wildcard ../declare/*.hpp)
+OBJS += $(call GET_OBJS,../define/,define)
+$(OBJ_DIR)/define/%.o: ../define/%.cpp $(HEADERS)
+	@mkdir -p $(OBJ_DIR)/define
+	$(CXX) $(FLAGS) -c $< -o $@
+
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(TARGET_DIR)
