@@ -5,7 +5,7 @@
 #include <vector>
 #include <iostream>
 
-#include "../third_party/ltz/proc_init/proc_init.hpp"
+#include "../../third_party/ltz/proc_init/proc_init.hpp"
 
 #define TCLI_F(...) LTZ_PI_F(tcli, __VA_ARGS__)
 

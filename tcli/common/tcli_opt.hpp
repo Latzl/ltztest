@@ -1,7 +1,7 @@
 #ifndef TCLI_OPT_HPP
 #define TCLI_OPT_HPP
 
-#include "../third_party/ltz/proc_init/proc_init.hpp"
+#include "../../third_party/ltz/proc_init/proc_init.hpp"
 #include <boost/program_options.hpp>
 
 #define TCLI_OPT_F(...) LTZ_PI_F(tcli_opt, __VA_ARGS__)
@@ -40,7 +40,7 @@ class Opt {
         for (auto& opt_desc : opt_desc_list_) {
             opt_desc_.add(opt_desc);
         }
-        pparser_->options(opt_desc_).positional(opt_pos_desc_).allow_unregistered();
+        pparser_->options(opt_desc_).positional(opt_pos_desc_);
     }
     inline void parse() {
         pparsed_opts_ = new boost::program_options::parsed_options(pparser_->run());
@@ -56,6 +56,12 @@ class Opt {
     inline Opt& add_pos_description(const std::string& name, int max_count) {
         opt_pos_desc_.add(name.c_str(), max_count);
         return *this;
+    }
+
+    inline std::string get_help(){
+        std::stringstream ss;
+        ss << opt_desc_;
+        return ss.str();
     }
 };
 }  // namespace opt

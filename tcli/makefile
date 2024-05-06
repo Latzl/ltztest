@@ -6,22 +6,39 @@ TARGET_DIR = $(BUILD_DIR)/bin
 TARGET = $(TARGET_DIR)/tcli
 
 LIBS += -Wl,-Bstatic -lboost_program_options -lgtest -Wl,-Bdynamic
-# LIBS += -lboost_program_options
 LIBS += -lpthread
 
-OBJS = $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(wildcard *.cpp))
-
-HEADERS += $(wildcard *.hpp)
 HEADERS += $(wildcard ../third_party/ltz/*/*.hpp)
 
-$(OBJ_DIR)/%.o: %.cpp $(HEADERS)
+define GET_OBJS
+$(patsubst %.cpp, $(OBJ_DIR)/$(2)/%.o,$(notdir $(wildcard $(1)/*.cpp)))
+endef
+
+OBJS += $(call GET_OBJS,./,.)
+$(OBJ_DIR)/%.o: ./%.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(FLAGS) -c $< -o $@
+
+HEADERS += $(wildcard ./common/*.hpp)
+OBJS += $(call GET_OBJS,./common/,common)
+$(OBJ_DIR)/common/%.o: ./common/%.cpp $(HEADERS)
+	@mkdir -p $(OBJ_DIR)/common
+	$(CXX) $(FLAGS) -c $< -o $@
+
+HEADERS += $(wildcard ./gtest/*.hpp)
+OBJS += $(call GET_OBJS,./gtest/,gtest)
+$(OBJ_DIR)/gtest/%.o: ./gtest/%.cpp $(HEADERS)
+	@mkdir -p $(OBJ_DIR)/gtest
+	$(CXX) $(FLAGS) -c $< -o $@
+
 
 $(TARGET): $(OBJS)
 	@mkdir -p $(TARGET_DIR)
 	$(CXX) $(FLAGS) -o $@ $^ $(LIBS)
 
-.PHONY: clean
+.PHONY: clean test
 clean:
 	rm -r $(BUILD_DIR)
+
+test: 
+	@echo $(OBJS)

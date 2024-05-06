@@ -24,7 +24,9 @@ int main(int argc, char* argv[]) {
         tcli::list_all();
         return 0;
     }
-    if (tcli::args.empty()) {
+    if (vm["help"].as<bool>() || tcli::args.empty()) {
+        std::cout << opt.get_help() << std::endl;
+        std::cout << "fuction path tree: " << std::endl;
         tcli::list_all();
         return 0;
     }
