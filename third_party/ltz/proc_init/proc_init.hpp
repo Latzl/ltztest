@@ -174,6 +174,9 @@ class Register {
         Data *data = rt_.get_value<Data *>();
         std::stringstream ss;
         ss << tree_name;
+        if(data){
+            ss << "*";
+        }
         if (level > 0) {
             ss << "(0x" << std::hex << (long int)&rt_ << ", 0x" << (long int)data << ")";
         }
@@ -265,6 +268,9 @@ class Register {
             reg_tree &tree_child = pr.second;
             Data *data_child = tree_child.get_value<Data *>();
             ss << std::string(depth * 2, ' ') << key_child;
+            if(data_child){
+                ss << "*";
+            }
             if (level > 0) {
                 ss << "(0x" << std::hex << (long int)&tree_child << ", 0x" << (long int)data_child << ")";
             }

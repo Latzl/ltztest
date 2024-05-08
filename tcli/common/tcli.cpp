@@ -13,7 +13,7 @@ TCLI_OPT_F(tcli) {
     desc.add_options()  //
         ("help,h", boost::program_options::bool_switch(), "Show this message then exit.")  //
         ("list,t", boost::program_options::bool_switch(), "List sub path of current given path then exit.")  //
-        ("list-all,T", boost::program_options::bool_switch(), "List all register function then exit.")  //
+        ("list-all,T", boost::program_options::bool_switch(), "List all registered function tree then exit. Node with * indicate that a function has registered on this node. Therefore, the path to this node can be the path to excutable function.")  //
         ("fpath,f", boost::program_options::value<std::vector<std::string>>()->default_value(args, "")->multitoken(), "Set function path to execute.")  //
         ("silence,s", boost::program_options::bool_switch(), "Silence mode.")  //
         ("verbose,v", boost::program_options::bool_switch(), "Verbose mode.")  //
