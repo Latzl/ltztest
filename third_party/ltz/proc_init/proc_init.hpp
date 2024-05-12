@@ -68,7 +68,7 @@ class Register {
 
    private:
     using reg_tree = boost::property_tree::basic_ptree<std::string, Data *>;
-    reg_tree rt_;
+    reg_tree rt_{nullptr};
     struct to_data_translator {
         using internal_type = Data *;
         using external_type = Data *;
@@ -206,7 +206,7 @@ class Register {
     }
 
     template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline static void put_impl(It itl, It itr, Data *data, reg_tree &tree) {
+    inline void put_impl(It itl, It itr, Data *data, reg_tree &tree) {
         if (itl > itr) {
             return;
         }
