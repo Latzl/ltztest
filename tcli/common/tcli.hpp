@@ -33,6 +33,13 @@ inline void list_all() {
     }
 }
 
+namespace ipc {
+int listen();
+int connect();
+}  // namespace ipc
+
+int main();
+
 }  // namespace tcli
 
 #endif
