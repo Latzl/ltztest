@@ -38,12 +38,12 @@ TCLI_OPT_F(tcli) {
     return 0;
 }
 
+
+namespace ipc {
 const std::string shm_name = "ltz_tcli_shm";
 const std::string vec_name = "ltz_tcli_vec";
 const std::string mtx_name = "ltz_tcli_mtx";
 const std::string cnd_name = "ltz_tcli_cnd";
-
-namespace ipc {
 using allocator_char = boost::interprocess::allocator<char, boost::interprocess::managed_shared_memory::segment_manager>;
 using string = boost::interprocess::basic_string<char, std::char_traits<char>, allocator_char>;
 using allocator_vec = boost::interprocess::allocator<string, boost::interprocess::managed_shared_memory::segment_manager>;
@@ -157,7 +157,7 @@ TCLI_F_TCLI(echo_args) {
 
 TCLI_F_TCLI(server, is_on) {
     try {
-        boost::interprocess::managed_shared_memory managed_shm(boost::interprocess::open_only, tcli::shm_name.c_str());
+        boost::interprocess::managed_shared_memory managed_shm(boost::interprocess::open_only, tcli::ipc::shm_name.c_str());
         std::cout << "tcli server is on." << std::endl;
     } catch (boost::interprocess::interprocess_exception& ex) {
         std::cout << "tcli server is off." << std::endl;
