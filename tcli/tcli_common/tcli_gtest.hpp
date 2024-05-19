@@ -1,7 +1,7 @@
 #ifndef TCLI_GTEST_HPP
 #define TCLI_GTEST_HPP
-#include "../common/tcli_opt.hpp"
-#include "../common/tcli.hpp"
+#include "../tcli_common/tcli_opt.hpp"
+#include "../tcli_common/tcli.hpp"
 
 #include <gtest/gtest.h>
 
