@@ -2,24 +2,7 @@
 
 exe='tcli'
 
-log2Comp() {
-    local content=$1
-    echo -e "$content" >>/tmp/comp
-}
-
-logArgs() {
-    local args
-    for ((i = 0; i < 10; i++)); do
-        args+=("${i}:${COMP_WORDS[$i]}")
-    done
-    log2Comp "${args[*]}"
-}
-
 _tcli_completion() {
-    # log2Comp "=== $(date +"%Y-%m-%d %H:%M:%S") ==="
-    # logArgs
-    # log2Comp "\ncur: ${COMP_WORDS[COMP_CWORD]}\nprev: ${COMP_WORDS[COMP_CWORD - 1]}\n2: $2\n3: $3"
-
     local temp_words="${COMP_WORDS[@]:0:$COMP_CWORD}"
     local output=$(${temp_words[@]} --list --silence)
     COMPREPLY=($(compgen -W "$output" -- "$2"))
