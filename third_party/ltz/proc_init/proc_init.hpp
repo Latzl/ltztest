@@ -13,42 +13,10 @@
 #include <iostream>
 #include <boost/property_tree/ptree.hpp>
 #include "../preprocessor/preprocessor.hpp"
+#include "../string/string.hpp"
 
 namespace ltz {
 namespace proc_init {
-
-inline std::vector<std::string> split(const std::string &src, const std::string &delimiter) {
-    if (src.empty()) {
-        return {};
-    }
-    if (delimiter.empty()) {
-        return {src};
-    }
-    std::vector<std::string> vRet{};
-    size_t last = 0;
-    size_t next = 0;
-    while ((next = src.find(delimiter, last)) != std::string::npos) {
-        vRet.emplace_back(src.substr(last, next - last));
-        last = next + delimiter.size();
-    }
-    if (last < src.size()) {
-        vRet.push_back(src.substr(last));
-    } else if (last == src.size()) {
-        vRet.push_back("");
-    }
-    return vRet;
-}
-
-inline std::string join(const std::vector<std::string> &v, const std::string &delimiter) {
-    std::string s;
-    for (size_t i = 0; i < v.size(); i++) {
-        s += v[i] + delimiter;
-    }
-    if (v.size() && s.size()) {
-        s.erase(s.size() - delimiter.size());
-    }
-    return s;
-}
 
 struct Data {
     virtual int f(const std::vector<std::string> &lpiArgs) = 0;
@@ -105,7 +73,8 @@ class Register {
             std::stringstream ss;
             ss << "======== " << path2str(itl, pr.second);
             if (pr.second != itr) {
-                ss << " " << join(std::vector<std::string>(pr.second, itr), " ");
+                std::vector<std::string> v(pr.second, itr);
+                ss << " " << str::join(v.begin(), v.end(), " ");
             }
             ss << " ========";
             std::cout << ss.str() << std::endl;
@@ -122,7 +91,7 @@ class Register {
     }
 
     inline int run(const std::string &path) {
-        std::vector<std::string> v = split(path, "/");
+        std::vector<std::string> v = str::split(path, "/");
         return run(v.begin(), v.end());
     }
 
@@ -156,7 +125,8 @@ class Register {
 
     template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
     inline std::string list_children(It itl, It itr) {
-        std::string path = join(std::vector<std::string>(itl, itr), "/");
+        std::vector<std::string> v(itl, itr);
+        std::string path = str::join(v.begin(), v.end(), "/");
         return list_children(path);
     }
 
@@ -349,7 +319,7 @@ inline Register &get_register(const std::string &name) {
 #define LTZ_PI_F(name, ...)                                                                                                 \
     struct LTZ_PI_REG(name, __VA_ARGS__) : public ::ltz::proc_init::Data {                                                  \
         LTZ_PI_REG(name, __VA_ARGS__)() {                                                                                   \
-            std::vector<std::string> vpath = ::ltz::proc_init::split(BOOST_PP_STRINGIZE(LTZ_PI_CAT(__VA_ARGS__)), "XLPIX"); \
+            std::vector<std::string> vpath = ::ltz::str::split(BOOST_PP_STRINGIZE(LTZ_PI_CAT(__VA_ARGS__)), "XLPIX"); \
             file_ = __FILE__;                                                                                               \
             line_ = __LINE__;                                                                                               \
             auto &reg = ::ltz::proc_init::get_register(BOOST_PP_STRINGIZE(name));                                           \
