@@ -9,6 +9,10 @@
 
 #define TCLI_F(...) LTZ_PI_F(tcli, __VA_ARGS__)
 
+#define TCLI_P(str, ...) \
+    LTZ_PI_HANDLE_REG_OBJ(        \
+        tcli, [](ltz::proc_init::Data& data) { data.desc_ = str; }, __VA_ARGS__)
+
 namespace tcli {
 
 extern int argc;
@@ -31,6 +35,18 @@ inline void list_all() {
     if (s.size()) {
         std::cout << s << std::endl;
     }
+}
+
+inline void prompt(const std::vector<std::string>& v) {
+    auto pr = get_register().get(v.begin(), v.end());
+    auto data = pr.first;
+    if (!data) {
+        return;
+    }
+    if (data->desc_.empty()) {
+        return;
+    }
+    std::cout << data->desc_ << std::endl;
 }
 
 namespace ipc {

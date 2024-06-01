@@ -93,7 +93,7 @@ class Register {
     template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
     inline int run(It itl, It itr) {
         ok_ = true;
-        auto pr = get(itl, itr, rt_);
+        auto pr = get(itl, itr);
         if (!pr.first) {
             std::cerr << "Invalid path: " << path2str(itl, itr) << std::endl;
             ok_ = false;
@@ -174,7 +174,7 @@ class Register {
         Data *data = rt_.get_value<Data *>();
         std::stringstream ss;
         ss << tree_name;
-        if(data){
+        if (data) {
             ss << "*";
         }
         if (level > 0) {
@@ -187,6 +187,29 @@ class Register {
             s.pop_back();
         }
         return s;
+    }
+
+    template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
+    inline std::pair<Data *, It> get(It itl, It itr, reg_tree &tree) {
+        if (itl > itr) {
+            return {nullptr, itr};
+        }
+        if (itl == itr) {
+            return {tree.get_value<Data *>(to_data_translator()), itl};
+        }
+        if (*itl == "--") {
+            return {tree.get_value<Data *>(to_data_translator()), std::next(itl)};
+        }
+        auto opt = tree.get_child_optional(*itl);
+        if (!opt) {
+            return {tree.get_value<Data *>(to_data_translator()), itl};
+        }
+        return get(std::next(itl), itr, *opt);
+    }
+
+    template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
+    inline std::pair<Data *, It> get(It itl, It itr) {
+        return get(itl, itr, rt_);
     }
 
     /* helper */
@@ -221,24 +244,6 @@ class Register {
         put_impl(std::next(itl), itr, data, *opt);
     }
 
-    template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline std::pair<Data *, It> get(It itl, It itr, reg_tree &tree) {
-        if (itl > itr) {
-            return {nullptr, itr};
-        }
-        if (itl == itr) {
-            return {tree.get_value<Data *>(to_data_translator()), itl};
-        }
-        if (*itl == "--") {
-            return {tree.get_value<Data *>(to_data_translator()), std::next(itl)};
-        }
-        auto opt = tree.get_child_optional(*itl);
-        if (!opt) {
-            return {tree.get_value<Data *>(to_data_translator()), itl};
-        }
-        return get(std::next(itl), itr, *opt);
-    }
-
     inline void run_all_impl(std::vector<std::string> &v, reg_tree &tree) {
         Data *data = tree.get_value<Data *>(to_data_translator());
         if (data) {
@@ -268,7 +273,7 @@ class Register {
             reg_tree &tree_child = pr.second;
             Data *data_child = tree_child.get_value<Data *>();
             ss << std::string(depth * 2, ' ') << key_child;
-            if(data_child){
+            if (data_child) {
                 ss << "*";
             }
             if (level > 0) {
@@ -334,12 +339,16 @@ inline Register &get_register(const std::string &name) {
 
 #define LTZ_PI_CAT(...) LTZ_PP_CAT_WITH_SEP(XLPIX, __VA_ARGS__)
 #define LTZ_PI_GEN_NAME(prefix, ...) BOOST_PP_CAT(prefix##_, LTZ_PI_CAT(__VA_ARGS__))
-#define LTZ_PI_GEN_NAME_REG(name, ...) LTZ_PI_GEN_NAME(_lpi_reg_##name, __VA_ARGS__)
-#define LTZ_PI_GEN_NAME_REG_OBJ(name, ...) LTZ_PI_GEN_NAME(lpi_reg_obj_##name, __VA_ARGS__)
+
+#define LTZ_PI_REG(name, ...) LTZ_PI_GEN_NAME(_lpi_reg_##name, __VA_ARGS__)
+#define LTZ_PI_REG_OBJ(name, ...) LTZ_PI_GEN_NAME(lpi_reg_obj_##name, __VA_ARGS__)
+
+#define LTZ_PI_REG_HANDLER(reg_obj_name) BOOST_PP_CAT(reg_obj_name, _handler)
+#define LTZ_PI_REG_HANDLER_OBJ(reg_obj_name) BOOST_PP_CAT(reg_obj_name, _handler_obj)
 
 #define LTZ_PI_F(name, ...)                                                                                                 \
-    struct LTZ_PI_GEN_NAME_REG(name, __VA_ARGS__) : public ::ltz::proc_init::Data {                                         \
-        LTZ_PI_GEN_NAME_REG(name, __VA_ARGS__)() {                                                                          \
+    struct LTZ_PI_REG(name, __VA_ARGS__) : public ::ltz::proc_init::Data {                                                  \
+        LTZ_PI_REG(name, __VA_ARGS__)() {                                                                                   \
             std::vector<std::string> vpath = ::ltz::proc_init::split(BOOST_PP_STRINGIZE(LTZ_PI_CAT(__VA_ARGS__)), "XLPIX"); \
             file_ = __FILE__;                                                                                               \
             line_ = __LINE__;                                                                                               \
@@ -347,7 +356,18 @@ inline Register &get_register(const std::string &name) {
             reg.put(vpath.begin(), vpath.end(), this);                                                                      \
         }                                                                                                                   \
         int f(const std::vector<std::string> &lpiArgs) override;                                                            \
-    } LTZ_PI_GEN_NAME_REG_OBJ(name, __VA_ARGS__);                                                                           \
-    int LTZ_PI_GEN_NAME_REG(name, __VA_ARGS__)::f(const std::vector<std::string> &lpiArgs)
+    } LTZ_PI_REG_OBJ(name, __VA_ARGS__);                                                                                    \
+    int LTZ_PI_REG(name, __VA_ARGS__)::f(const std::vector<std::string> &lpiArgs)
+
+/*
+    @param fn, function to handle Data structure, prototype: void fn(ltz::proc_init::Data &data)
+ */
+#define LTZ_PI_HANDLE_REG_OBJ(name, fn, ...)                       \
+    struct LTZ_PI_REG_HANDLER(LTZ_PI_REG_OBJ(name, __VA_ARGS__)) { \
+        LTZ_PI_REG_HANDLER(LTZ_PI_REG_OBJ(name, __VA_ARGS__))() {  \
+            auto &reg_obj = LTZ_PI_REG_OBJ(name, __VA_ARGS__);     \
+            fn(reg_obj);                                           \
+        }                                                          \
+    } LTZ_PI_REG_HANDLER_OBJ(LTZ_PI_REG_OBJ(name, __VA_ARGS__));
 
 #endif

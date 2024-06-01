@@ -24,6 +24,10 @@ int main(int argc, char* argv[]) {
         tcli::list_all();
         return 0;
     }
+    if (vm["prompt"].as<bool>()){
+        tcli::prompt(tcli::args);
+        return 0;
+    }
     if (vm["listen"].as<bool>()) {
         return tcli::ipc::listen();
     }
