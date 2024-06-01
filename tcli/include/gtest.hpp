@@ -1,7 +1,7 @@
 #ifndef TCLI_GTEST_HPP
 #define TCLI_GTEST_HPP
-#include "../tcli_common/tcli_opt.hpp"
-#include "../tcli_common/tcli.hpp"
+#include <tcli/opt.hpp>
+#include <tcli/tcli.hpp>
 
 #include <gtest/gtest.h>
 
@@ -10,19 +10,7 @@
 namespace tcli {
 namespace gtest {
 
-inline int test_with_filter(const std::string& suit = "", const std::string& test = "") {
-    ::testing::InitGoogleTest(&argc, argv);
-    std::string filter, suit_ = suit, test_ = test;
-    if (suit.empty()) {
-        suit_ = "*";
-    }
-    if (test.empty()) {
-        test_ = "*";
-    }
-    filter = suit_ + "." + test_;
-    ::testing::GTEST_FLAG(filter) = filter.c_str();
-    return RUN_ALL_TESTS();
-}
+int test_with_filter(const std::string& suit = "", const std::string& test = "");
 
 }  // namespace gtest
 }  // namespace tcli

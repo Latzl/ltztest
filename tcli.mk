@@ -6,7 +6,7 @@ OBJ_DIR = $(BUILD_DIR)/obj
 TARGET_DIR = $(BUILD_DIR)/bin
 TARGET = $(TARGET_DIR)/tcli
 
-LIBS += -Wl,-Bstatic -lboost_program_options -lgtest -Wl,-Bdynamic
+LIBS += -Wl,-Bstatic -ltcli -lboost_program_options -lgtest -Wl,-Bdynamic
 LIBS += -lpthread -lrt
 
 HEADERS += $(wildcard $(TCLI_MKDIR)/third_party/ltz/*/*.hpp)
@@ -38,8 +38,9 @@ $(OBJ_DIR)/define/%.o: ../define/%.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)/define
 	$(CXX) $(FLAGS) -c $< -o $@
 
+PATH2TCLILIB = $(TCLI_MKDIR)/tcli/build/bin/libtcli.a
 
-$(TARGET): $(OBJS)
+$(TARGET): $(OBJS) $(PATH2TCLILIB)
 	@mkdir -p $(TARGET_DIR)
 	$(CXX) $(FLAGS) -o $@ $^ $(LIBS)
 

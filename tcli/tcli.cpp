@@ -1,5 +1,5 @@
-#include "tcli.hpp"
-#include "tcli_opt.hpp"
+#include <tcli/tcli.hpp>
+#include <tcli/opt.hpp>
 #include <signal.h>
 #include <iostream>
 #include <thread>
@@ -19,24 +19,34 @@ int argc = 0;
 char** argv = nullptr;
 std::vector<std::string> args;
 
-/* define options of tcli */
-TCLI_OPT_F(tcli) {
-    boost::program_options::options_description desc("tcli");
-    desc.add_options()  //
-        ("help,h", boost::program_options::bool_switch(), "Show this message then exit.")  //
-        ("list,t", boost::program_options::bool_switch(), "List sub path of current given path then exit.")  //
-        ("list-all,T", boost::program_options::bool_switch(), "List all registered function tree then exit. Node with * indicate that a function has registered on this node. Therefore, the path to this node can be the path to excutable function.")  //
-        ("fpath,f", boost::program_options::value<std::vector<std::string>>()->default_value(args, "")->multitoken(), "Set function path to execute.")  //
-        ("prompt,p", boost::program_options::bool_switch(), "Print the corresponding prompt description for the function path. Only TCLI_SET_PROMPT() specified by function path was used will take effect.")
-        ("silence,s", boost::program_options::bool_switch(), "Silence mode.")  //
-        ("verbose,v", boost::program_options::bool_switch(), "Verbose mode.")  //
-        ("listen,l", boost::program_options::bool_switch(), "Listen other tcli process. As tcli server, wait for function path message from client then parse this path and execute.")  //
-        ("connect,c", boost::program_options::bool_switch(), "Connect to tcli server. Send function path message to server.")  //
-        ;
-    auto& opt = tcli::opt::Opt::instance();
-    opt.add_description(desc);
-    opt.add_pos_description("fpath", -1);
-    return 0;
+ltz::proc_init::Register& get_register() {
+    return ltz::proc_init::get_register("tcli");
+}
+
+void list(const std::vector<std::string>& v_path) {
+    std::string s = get_register().list_children(v_path.begin(), v_path.end());
+    if (s.size()) {
+        std::cout << s << std::endl;
+    }
+}
+
+void list_all() {
+    std::string s = get_register().toStr_registered(0, "tcli");
+    if (s.size()) {
+        std::cout << s << std::endl;
+    }
+}
+
+void prompt(const std::vector<std::string>& v) {
+    auto pr = get_register().get(v.begin(), v.end());
+    auto data = pr.first;
+    if (!data) {
+        return;
+    }
+    if (data->desc_.empty()) {
+        return;
+    }
+    std::cout << data->desc_ << std::endl;
 }
 
 
@@ -129,7 +139,43 @@ int connect() {
 }  // namespace ipc
 
 
-int main() {
+int main(int argc, char* argv[]) {
+    tcli::argc = argc;
+    tcli::argv = (char**)argv;
+
+    auto& opt = tcli::opt::Opt::instance();
+    opt.init(argc, argv);
+    opt.parse();
+
+    auto& vm = opt.vm_;
+
+    /* tcli */
+    tcli::args = vm["fpath"].as<std::vector<std::string>>();
+    if (vm["list"].as<bool>()) {
+        tcli::list(tcli::args);
+        return 0;
+    }
+    if (vm["list-all"].as<bool>()) {
+        tcli::list_all();
+        return 0;
+    }
+    if (vm["prompt"].as<bool>()) {
+        tcli::prompt(tcli::args);
+        return 0;
+    }
+    if (vm["listen"].as<bool>()) {
+        return tcli::ipc::listen();
+    }
+    if (vm["connect"].as<bool>()) {
+        return tcli::ipc::connect();
+    }
+    if (vm["help"].as<bool>() || tcli::args.empty()) {
+        std::cout << opt.get_help() << std::endl;
+        std::cout << "registered fuction tree: " << std::endl;
+        tcli::list_all();
+        return 0;
+    }
+
     auto& reg = get_register();
     int r = reg.run(args.begin(), args.end());
     if (!reg.ok_) {
@@ -140,9 +186,28 @@ int main() {
     return r;
 }
 
+/* define options of tcli */
+TCLI_OPT_F(tcli) {
+    boost::program_options::options_description desc("tcli");
+    desc.add_options()  //
+        ("help,h", boost::program_options::bool_switch(), "Show this message then exit.")  //
+        ("list,t", boost::program_options::bool_switch(), "List sub path of current given path then exit.")  //
+        ("list-all,T", boost::program_options::bool_switch(), "List all registered function tree then exit. Node with * indicate that a function has registered on this node. Therefore, the path to this node can be the path to excutable function.")  //
+        ("fpath,f", boost::program_options::value<std::vector<std::string>>()->default_value(args, "")->multitoken(), "Set function path to execute.")  //
+        ("prompt,p", boost::program_options::bool_switch(), "Print the corresponding prompt description for the function path. Only TCLI_SET_PROMPT() specified by function path was used will take effect.")("silence,s", boost::program_options::bool_switch(), "Silence mode.")  //
+        ("verbose,v", boost::program_options::bool_switch(), "Verbose mode.")  //
+        ("listen,l", boost::program_options::bool_switch(), "Listen other tcli process. As tcli server, wait for function path message from client then parse this path and execute.")  //
+        ("connect,c", boost::program_options::bool_switch(), "Connect to tcli server. Send function path message to server.")  //
+        ;
+    auto& opt = tcli::opt::Opt::instance();
+    opt.add_description(desc);
+    opt.add_pos_description("fpath", -1);
+    return 0;
+}
+
 }  // namespace tcli
 
-/* define function below */
+/* define test command below */
 #define TCLI_F_TCLI(...) TCLI_F(tcli, __VA_ARGS__)
 TCLI_F_TCLI(toStr_registered_debug) {
     std::cout << tcli::get_register().toStr_registered(1, "root") << std::endl;

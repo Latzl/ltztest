@@ -1,4 +1,4 @@
-#include "tcli_gtest.hpp"
+#include <tcli/gtest.hpp>
 
 TCLI_GTEST_ALL()
 
