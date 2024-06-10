@@ -20,24 +20,6 @@ $(OBJ_DIR)/%.o: ./%.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(FLAGS) -c $< -o $@
 
-HEADERS += $(wildcard ./tcli_common/*.hpp)
-OBJS += $(call GET_OBJS,./tcli_common/,tcli_common)
-$(OBJ_DIR)/tcli_common/%.o: ./tcli_common/%.cpp $(HEADERS)
-	@mkdir -p $(OBJ_DIR)/tcli_common
-	$(CXX) $(FLAGS) -c $< -o $@
-
-HEADERS += $(wildcard ./gtest/*.hpp)
-OBJS += $(call GET_OBJS,./gtest/,gtest)
-$(OBJ_DIR)/gtest/%.o: ./gtest/%.cpp $(HEADERS)
-	@mkdir -p $(OBJ_DIR)/gtest
-	$(CXX) $(FLAGS) -c $< -o $@
-
-HEADERS += $(wildcard ../declare/*.hpp)
-OBJS += $(call GET_OBJS,../define/,define)
-$(OBJ_DIR)/define/%.o: ../define/%.cpp $(HEADERS)
-	@mkdir -p $(OBJ_DIR)/define
-	$(CXX) $(FLAGS) -c $< -o $@
-
 PATH2TCLILIB = $(TCLI_MKDIR)/tcli/build/bin/libtcli.a
 
 $(TARGET): $(OBJS) $(PATH2TCLILIB)
@@ -50,3 +32,4 @@ clean:
 
 test: 
 	@echo $(OBJS)
+	@echo $(HEADERS)
