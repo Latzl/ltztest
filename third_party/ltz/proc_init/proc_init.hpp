@@ -316,17 +316,17 @@ inline Register &get_register(const std::string &name) {
 #define LTZ_PI_REG_HANDLER(reg_obj_name) BOOST_PP_CAT(reg_obj_name, _handler)
 #define LTZ_PI_REG_HANDLER_OBJ(reg_obj_name) BOOST_PP_CAT(reg_obj_name, _handler_obj)
 
-#define LTZ_PI_F(name, ...)                                                                                                 \
-    struct LTZ_PI_REG(name, __VA_ARGS__) : public ::ltz::proc_init::Data {                                                  \
-        LTZ_PI_REG(name, __VA_ARGS__)() {                                                                                   \
+#define LTZ_PI_F(name, ...)                                                                                           \
+    struct LTZ_PI_REG(name, __VA_ARGS__) : public ::ltz::proc_init::Data {                                            \
+        LTZ_PI_REG(name, __VA_ARGS__)() {                                                                             \
             std::vector<std::string> vpath = ::ltz::str::split(BOOST_PP_STRINGIZE(LTZ_PI_CAT(__VA_ARGS__)), "XLPIX"); \
-            file_ = __FILE__;                                                                                               \
-            line_ = __LINE__;                                                                                               \
-            auto &reg = ::ltz::proc_init::get_register(BOOST_PP_STRINGIZE(name));                                           \
-            reg.put(vpath.begin(), vpath.end(), this);                                                                      \
-        }                                                                                                                   \
-        int f(const std::vector<std::string> &lpiArgs) override;                                                            \
-    } LTZ_PI_REG_OBJ(name, __VA_ARGS__);                                                                                    \
+            file_ = __FILE__;                                                                                         \
+            line_ = __LINE__;                                                                                         \
+            auto &reg = ::ltz::proc_init::get_register(BOOST_PP_STRINGIZE(name));                                     \
+            reg.put(vpath.begin(), vpath.end(), this);                                                                \
+        }                                                                                                             \
+        int f(const std::vector<std::string> &lpiArgs) override;                                                      \
+    } LTZ_PI_REG_OBJ(name, __VA_ARGS__);                                                                              \
     int LTZ_PI_REG(name, __VA_ARGS__)::f(const std::vector<std::string> &lpiArgs)
 
 /*
