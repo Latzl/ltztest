@@ -62,8 +62,8 @@ class reg {
         put_impl(itl, itr, entry, rt_);
     }
 
-    inline void put(const std::string &path, T *entry = nullptr) {
-        std::vector<std::string> v = ltz::str::split(path, "/");
+    inline void put(const std::string &path, T *entry = nullptr, const std::string &path_sep = "/") {
+        std::vector<std::string> v = ltz::str::split(path, path_sep);
         put(v.begin(), v.end(), entry);
     }
 
@@ -90,8 +90,8 @@ class reg {
         return get(itl, itr, rt_);
     }
 
-    inline T *get(const std::string &path) {
-        std::vector<std::string> v = ltz::str::split(path, "/");
+    inline T *get(const std::string &path, const std::string &path_sep = "/") {
+        std::vector<std::string> v = ltz::str::split(path, path_sep);
         auto pr = get(v.begin(), v.end());
         return pr.first;
     }
