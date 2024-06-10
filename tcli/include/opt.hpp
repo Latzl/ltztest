@@ -4,13 +4,14 @@
 #include <ltz/proc_init/proc_init.hpp>
 #include <boost/program_options.hpp>
 
-#define TCLI_OPT_F(...) LTZ_PI_F(tcli_opt, __VA_ARGS__)
-
+// #define TCLI_OPT_F(...) LTZ_PI_F(tcli_opt, __VA_ARGS__)
 namespace tcli {
 namespace opt {
 
+struct node : public ltz::proc_init::fn::node {};
+
 class Opt {
-   private:
+   public:
     Opt() = default;
     ~Opt() = default;
 
@@ -25,10 +26,10 @@ class Opt {
     boost::program_options::variables_map vm_;
 
    public:
-    inline static Opt& instance() {
-        static Opt opt;
-        return opt;
-    }
+    // inline static Opt& instance() {
+    //     static Opt opt;
+    //     return opt;
+    // }
     void init(int argc, char* argv[]);
     void parse();
 
@@ -38,7 +39,16 @@ class Opt {
 
     std::string get_help();
 };
+
+extern Opt opt;
 }  // namespace opt
 }  // namespace tcli
+
+#define TCLI_OPT_GET_REG() LTZ_PI_FN_GET_REG(tcli_opt)
+#define TCLI_OPT_FN(...)                                                \
+    LTZ_PI_FN_NODE_CONSTRUCT(tcli_opt, ::tcli::opt::node, __VA_ARGS__); \
+    LTZ_PI_FN_DEF_INIT(tcli_opt, __VA_ARGS__) {}                        \
+    LTZ_PI_FN_DEF_CLEAN(tcli_opt, __VA_ARGS__) {}                       \
+    LTZ_PI_FN_DEF_MAIN(tcli_opt, __VA_ARGS__)
 
 #endif

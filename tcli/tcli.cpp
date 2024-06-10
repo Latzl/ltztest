@@ -3,6 +3,7 @@
 #include <signal.h>
 #include <iostream>
 #include <thread>
+#include <utility>
 
 #define BOOST_DATE_TIME_NO_LIB
 #include <boost/interprocess/managed_shared_memory.hpp>
@@ -19,34 +20,39 @@ int argc = 0;
 char** argv = nullptr;
 std::vector<std::string> args;
 
-ltz::proc_init::Register& get_register() {
-    return ltz::proc_init::get_register("tcli");
-}
 
-void list(const std::vector<std::string>& v_path) {
-    std::string s = get_register().list_children(v_path.begin(), v_path.end());
+// ltz::proc_init::Register& get_register() {
+//     return ltz::proc_init::get_register("tcli");
+// }
+
+void list(const std::vector<std::string>& vPath) {
+    // std::string s = get_register().list_children(v_path.begin(), v_path.end());
+    std::string s = TCLI_GET_REG().list_children(vPath.begin(), vPath.end());
     if (s.size()) {
         std::cout << s << std::endl;
     }
 }
 
 void list_all() {
-    std::string s = get_register().toStr_registered(0, "tcli");
+    // std::string s = get_register().toStr_registered(0, "tcli");
+    std::string s = TCLI_GET_REG().toStr_registered();
     if (s.size()) {
         std::cout << s << std::endl;
     }
 }
 
-void prompt(const std::vector<std::string>& v) {
-    auto pr = get_register().get(v.begin(), v.end());
-    auto data = pr.first;
-    if (!data) {
+void prompt(const std::vector<std::string>& vPath) {
+    // auto pr = get_register().get(vPath.begin(), vPath.end());
+    auto pr = TCLI_GET_REG().get(vPath.begin(), vPath.end());
+    auto pNode = pr.first;
+    if (!pNode) {
         return;
     }
-    if (data->desc_.empty()) {
+    auto& node = *dynamic_cast<tcli::node*>(pNode);
+    if (node.desc.empty()) {
         return;
     }
-    std::cout << data->desc_ << std::endl;
+    std::cout << node.desc << std::endl;
 }
 
 
@@ -93,7 +99,7 @@ int listen() {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(*mtx);
 
     listening = true;
-    auto& reg = get_register();
+    auto& reg = TCLI_GET_REG();
     while (1) {
         cnd->wait(lock);
         if (!listening) {
@@ -106,7 +112,7 @@ int listen() {
         }
 
         reg.run(args.begin(), args.end());
-        if (!reg.ok_) {
+        if (!reg.ok()) {
             std::cout << "possible sub path: " << std::endl;
             list(args);
         }
@@ -138,12 +144,49 @@ int connect() {
 }
 }  // namespace ipc
 
+template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type* = nullptr>
+std::string path2str(It itl, It itr) {
+    std::stringstream ss;
+    while (itl != itr) {
+        ss << *itl << "/";
+        itl = std::next(itl);
+    }
+    std::string s = ss.str();
+    if (s.size()) {
+        s.pop_back();
+    }
+    return s;
+}
+
+int run_op(ltz::proc_init::fn::node& lpif_node, std::vector<std::string>::iterator itl, std::vector<std::string>::iterator itr, std::vector<std::string>::iterator itm) {
+    auto& nd = dynamic_cast<node&>(lpif_node);
+    int nRet = 0;
+    std::stringstream ss;
+
+    ss << "======== " << path2str(itl, itm);
+    if (itm != itr) {
+        std::vector<std::string> v(itm, itr);
+        ss << " " << ltz::str::join(v.begin(), v.end(), " ");
+    }
+    ss << " ========";
+    std::cout << ss.str() << std::endl;
+    ss.str("");
+
+    Timer timer{};
+    nRet = nd.lpif_main(std::vector<std::string>{itm, itr});
+    ss << timer.end().report();
+
+    std::cout << "======== "
+              << "return value: " << nRet << ", time cost: " << ss.str()  //
+              << " ========" << std::endl;
+    return nRet;
+}
 
 int main(int argc, char* argv[]) {
     tcli::argc = argc;
     tcli::argv = (char**)argv;
 
-    auto& opt = tcli::opt::Opt::instance();
+    auto& opt = tcli::opt::opt;
     opt.init(argc, argv);
     opt.parse();
 
@@ -163,12 +206,14 @@ int main(int argc, char* argv[]) {
         tcli::prompt(tcli::args);
         return 0;
     }
+
     if (vm["listen"].as<bool>()) {
         return tcli::ipc::listen();
     }
     if (vm["connect"].as<bool>()) {
         return tcli::ipc::connect();
     }
+
     if (vm["help"].as<bool>() || tcli::args.empty()) {
         std::cout << opt.get_help() << std::endl;
         std::cout << "registered fuction tree: " << std::endl;
@@ -176,9 +221,9 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    auto& reg = get_register();
-    int r = reg.run(args.begin(), args.end());
-    if (!reg.ok_) {
+    auto& reg = TCLI_GET_REG();
+    int r = reg.run(args.begin(), args.end(), run_op);
+    if (!reg.ok()) {
         std::cout << "possible sub path: " << std::endl;
         list(args);
         return -1;
@@ -187,19 +232,20 @@ int main(int argc, char* argv[]) {
 }
 
 /* define options of tcli */
-TCLI_OPT_F(tcli) {
-    boost::program_options::options_description desc("tcli");
+TCLI_OPT_FN(tcli_opt) {
+    boost::program_options::options_description desc{"tcli_opt"};
     desc.add_options()  //
         ("help,h", boost::program_options::bool_switch(), "Show this message then exit.")  //
         ("list,t", boost::program_options::bool_switch(), "List sub path of current given path then exit.")  //
         ("list-all,T", boost::program_options::bool_switch(), "List all registered function tree then exit. Node with * indicate that a function has registered on this node. Therefore, the path to this node can be the path to excutable function.")  //
+        // todo: deal with problem that pass args need double '--'
         ("fpath,f", boost::program_options::value<std::vector<std::string>>()->default_value(args, "")->multitoken(), "Set function path to execute.")  //
         ("prompt,p", boost::program_options::bool_switch(), "Print the corresponding prompt description for the function path. Only TCLI_SET_PROMPT() specified by function path was used will take effect.")("silence,s", boost::program_options::bool_switch(), "Silence mode.")  //
         ("verbose,v", boost::program_options::bool_switch(), "Verbose mode.")  //
         ("listen,l", boost::program_options::bool_switch(), "Listen other tcli process. As tcli server, wait for function path message from client then parse this path and execute.")  //
         ("connect,c", boost::program_options::bool_switch(), "Connect to tcli server. Send function path message to server.")  //
         ;
-    auto& opt = tcli::opt::Opt::instance();
+    auto& opt = tcli::opt::opt;
     opt.add_description(desc);
     opt.add_pos_description("fpath", -1);
     return 0;
@@ -208,20 +254,21 @@ TCLI_OPT_F(tcli) {
 }  // namespace tcli
 
 /* define test command below */
-#define TCLI_F_TCLI(...) TCLI_F(tcli, __VA_ARGS__)
-TCLI_F_TCLI(toStr_registered_debug) {
-    std::cout << tcli::get_register().toStr_registered(1, "root") << std::endl;
+#define TCLI_FN_TCLI(...) TCLI_FN(tcli, __VA_ARGS__)
+
+TCLI_FN_TCLI(toStr_registered_debug) {
+    std::cout << TCLI_GET_REG().toStr_registered("root") << std::endl;
     return 0;
 }
 
-TCLI_F_TCLI(echo_args) {
-    for (const auto& s : lpiArgs) {
+TCLI_FN_TCLI(echo_args) {
+    for (const auto& s : lpif_args) {
         std::cout << s << std::endl;
     }
     return 0;
 }
 
-TCLI_F_TCLI(server, is_on) {
+TCLI_FN_TCLI(server, is_on) {
     try {
         boost::interprocess::managed_shared_memory managed_shm(boost::interprocess::open_only, tcli::ipc::shm_name.c_str());
         std::cout << "tcli server is on." << std::endl;

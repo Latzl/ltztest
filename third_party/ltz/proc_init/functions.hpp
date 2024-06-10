@@ -34,10 +34,11 @@ class fn_reg : public reg<fn::node> {
         @param itl
         @param itr
         @param op Function to do something and call lpif_main and do something after call lpif_main.
-            Prototype: int op(ltz::proc_init::fn::node &node, It &itl, It itr);
+            Prototype: int op(ltz::proc_init::fn::node &lpif_node, It itl, It itr, It itm);
+        @todo The first parameter in op is fn::node, it cause that code in definition of op have to dynamic_cast to custom node. Find way to suport custom node as parameter of op.
      */
-    template <typename It, typename UnaryOp, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline int run(It itl, It itr, UnaryOp op) {
+    template <typename It, typename Op, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
+    inline int run(It itl, It itr, Op op) {
         auto pr = get(itl, itr);
         fn::node *pNode = pr.first;
         if (!pNode) {
@@ -45,9 +46,9 @@ class fn_reg : public reg<fn::node> {
             err_msg = toStr(e);
             return -1;
         }
-        It it = pr.second;
+        It itm = pr.second;
 
-        int nRet = op(*pNode, it, itr);
+        int nRet = op(*pNode, itl, itr, itm);
         e = err::ok;
         err_msg = toStr(e);
         return nRet;
@@ -55,10 +56,10 @@ class fn_reg : public reg<fn::node> {
 
     template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
     inline int run(It itl, It itr) {
-        return run(itl, itr, [](ltz::proc_init::fn::node &node, It &itl, It itr) -> int {
+        return run(itl, itr, [](ltz::proc_init::fn::node &node, It &itl, It itr, It itm) -> int {
             int nRet = 0;
             node.lpif_init();
-            nRet = node.lpif_main(std::vector<std::string>{itl, itr});
+            nRet = node.lpif_main(std::vector<std::string>{itm, itr});
             node.lpif_clean();
             return nRet;
         });
@@ -70,6 +71,11 @@ class fn_reg : public reg<fn::node> {
     }
 
 
+    /* 
+        @brief todo
+        @param op Function to call lpif_main()
+            Prototype: int op(ltz::proc_init::fn::node& node);
+     */
     inline void run_all(std::function<int(fn::node &)> op) {
         std::vector<std::string> v;
         run_all_impl(v, rt_, op);
@@ -147,9 +153,9 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 #define _LTZ_PI_FN_REG_HANDLER_OBJ(handler, id) BOOST_PP_CAT(id, _handler_##handler##_obj)
 #define _LTZ_PI_FN_REG_HANDLE_FN(handler, id) BOOST_PP_CAT(id, _handle_fn_##handler)
 
-#define _LTZ_PI_FN_MAIN_FN(id) BOOST_PP_CAT(id, _main_fn)
-
 #define _LTZ_PI_FN_GET_REG_IMPL(name) ::ltz::proc_init::fn::get_fn_reg(BOOST_PP_STRINGIZE(name))
+
+// std::cout << "At " << (void *)this << " construct: " << BOOST_PP_STRINGIZE(_LTZ_PI_FN_GET_ID(name, path)) << std::endl; \
 
 #define _LTZ_PI_FN_NODE_CONSTRUCT_IMPL(name, type, path)                                      \
     struct _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path)) : public type {                \
@@ -209,7 +215,6 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
     @param name Unique name that specify the register.
     @param handle_name Unique name for register indicated by name, handle_name descibe what will be handle to node.
     @param ... Variadic param to specify path
-    @note Define body can use variable: lpif_node
  */
 #define LTZ_PI_FN_NODE_HANDLE(name, handle_name, ...) _LTZ_PI_FN_NODE_HANDLE_IMPL(name, handle_name, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
 

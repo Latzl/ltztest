@@ -3,10 +3,11 @@
 namespace tcli {
 namespace opt {
 
+Opt opt;
+
 void Opt::init(int argc, char* argv[]) {
     /* run all options register define on other source */
-    auto& reg = ltz::proc_init::get_register("tcli_opt");
-    reg.silence_ = true;
+    auto& reg = TCLI_OPT_GET_REG();
     reg.run_all();
 
     /* init parser */

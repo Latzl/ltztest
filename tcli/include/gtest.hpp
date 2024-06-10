@@ -5,7 +5,7 @@
 
 #include <gtest/gtest.h>
 
-#define TCLI_F_GTEST(...) TCLI_F(gtest, __VA_ARGS__)
+#define TCLI_F_GTEST(...) TCLI_FN(gtest, __VA_ARGS__)
 
 namespace tcli {
 namespace gtest {
