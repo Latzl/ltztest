@@ -111,7 +111,7 @@ int listen() {
             args.push_back(str);
         }
 
-        reg.run(args.begin(), args.end());
+        reg.run(args.begin(), args.end(), run_op);
         if (!reg.ok()) {
             std::cout << "possible sub path: " << std::endl;
             list(args);
