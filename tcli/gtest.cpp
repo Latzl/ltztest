@@ -3,7 +3,7 @@
 namespace tcli {
 namespace gtest {
 int test_with_filter(const std::string& suit, const std::string& test) {
-    ::testing::InitGoogleTest(&argc, argv);
+    ::testing::InitGoogleTest(&argc_raw, argv_raw);
     std::string filter, suit_ = suit, test_ = test;
     if (suit.empty()) {
         suit_ = "*";

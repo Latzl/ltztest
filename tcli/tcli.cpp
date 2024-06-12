@@ -16,21 +16,36 @@
 
 namespace tcli {
 
-int argc = 0;
-char** argv = nullptr;
+static bool _with_dash = false;
+
+int argc_raw = 0;
+char** argv_raw = nullptr;
 std::vector<std::string> args;
 
+const std::string LIST_HEADER = "Candidate nodes:";
 
-// ltz::proc_init::Register& get_register() {
-//     return ltz::proc_init::get_register("tcli");
-// }
+/* declare */
+int run_op(ltz::proc_init::fn::node& lpif_node, std::vector<std::string>::iterator itl, std::vector<std::string>::iterator itr, std::vector<std::string>::iterator itm);
+
 
 void list(const std::vector<std::string>& vPath) {
     // std::string s = get_register().list_children(v_path.begin(), v_path.end());
-    std::string s = TCLI_GET_REG().list_children(vPath.begin(), vPath.end());
-    if (s.size()) {
-        std::cout << s << std::endl;
+    std::vector<std::string> v = TCLI_GET_REG().get_children_keys(vPath.begin(), vPath.end());
+    std::string sOutput;
+    for (auto& s : v) {
+        sOutput += s + " ";
     }
+    if (!sOutput.empty()) {
+        sOutput.pop_back();
+    }
+    if (_with_dash) {
+        std::cout << "With path: ";
+        std::copy(vPath.begin(), vPath.end(), std::ostream_iterator<std::string>(std::cout, "/"));
+        std::cout << ", " << LIST_HEADER << "\n";
+    } else {
+        std::cout << LIST_HEADER << "\n";
+    }
+    std::cout << sOutput << std::endl;
 }
 
 void list_all() {
@@ -111,9 +126,9 @@ int listen() {
             args.push_back(str);
         }
 
+        // todo about '--'
         reg.run(args.begin(), args.end(), run_op);
         if (!reg.ok()) {
-            std::cout << "possible sub path: " << std::endl;
             list(args);
         }
     }
@@ -163,17 +178,21 @@ int run_op(ltz::proc_init::fn::node& lpif_node, std::vector<std::string>::iterat
     int nRet = 0;
     std::stringstream ss;
 
+    std::vector<std::string> vArgsAll{itm, itr};
+    vArgsAll.insert(vArgsAll.end(), ::tcli::args.begin(), ::tcli::args.end());
+    ::tcli::args = vArgsAll;
+
     ss << "======== " << path2str(itl, itm);
-    if (itm != itr) {
-        std::vector<std::string> v(itm, itr);
-        ss << " " << ltz::str::join(v.begin(), v.end(), " ");
+    if (!::tcli::args.empty()) {
+        ss << " -- " << ltz::str::join(::tcli::args.begin(), ::tcli::args.end(), " ");
     }
     ss << " ========";
     std::cout << ss.str() << std::endl;
     ss.str("");
 
+
     Timer timer{};
-    nRet = nd.lpif_main(std::vector<std::string>{itm, itr});
+    nRet = nd.lpif_main(::tcli::args);
     ss << timer.end().report();
 
     std::cout << "======== "
@@ -182,20 +201,44 @@ int run_op(ltz::proc_init::fn::node& lpif_node, std::vector<std::string>::iterat
     return nRet;
 }
 
+/*
+    @brief Divide argv into two part at first '--'
+    @return Pair of vectors, first for args before '--', as seconde after. Note pair.first doesn't include argv[0]
+ */
+static std::pair<std::vector<std::string>, std::vector<std::string>> divide_argv(int argc, char* argv[]) {
+    std::vector<std::string> v_raw(argv + 1, argv + argc), v_front, v_behind;
+    auto it = std::find(v_raw.begin(), v_raw.end(), "--");
+    v_front.assign(v_raw.begin(), it);
+    if (it != v_raw.end()) {
+        v_behind.assign(std::next(it), v_raw.end());
+    }
+    return {v_front, v_behind};
+}
+
 int main(int argc, char* argv[]) {
-    tcli::argc = argc;
-    tcli::argv = (char**)argv;
+    ::tcli::argc_raw = argc;
+    ::tcli::argv_raw = (char**)argv;
 
     auto& opt = tcli::opt::opt;
-    opt.init(argc, argv);
+
+    std::vector<std::string> vFront;
+    auto pr = divide_argv(argc, argv);
+    vFront = pr.first;
+    ::tcli::args = pr.second;
+    // add 1 to include argv[0]
+    if (vFront.size() + 1 < (std::size_t)argc) {
+        _with_dash = true;
+    }
+
+    opt.init(vFront);
     opt.parse();
 
     auto& vm = opt.vm_;
 
     /* tcli */
-    tcli::args = vm["fpath"].as<std::vector<std::string>>();
+    std::vector<std::string> vArgsBeforeDash = vm["fpath"].as<std::vector<std::string>>();
     if (vm["list"].as<bool>()) {
-        tcli::list(tcli::args);
+        tcli::list(vArgsBeforeDash);
         return 0;
     }
     if (vm["list-all"].as<bool>()) {
@@ -203,7 +246,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
     if (vm["prompt"].as<bool>()) {
-        tcli::prompt(tcli::args);
+        tcli::prompt(vArgsBeforeDash);
         return 0;
     }
 
@@ -214,7 +257,7 @@ int main(int argc, char* argv[]) {
         return tcli::ipc::connect();
     }
 
-    if (vm["help"].as<bool>() || tcli::args.empty()) {
+    if (vm["help"].as<bool>() || vArgsBeforeDash.empty()) {
         std::cout << opt.get_help() << std::endl;
         std::cout << "registered fuction tree: " << std::endl;
         tcli::list_all();
@@ -222,10 +265,10 @@ int main(int argc, char* argv[]) {
     }
 
     auto& reg = TCLI_GET_REG();
-    int r = reg.run(args.begin(), args.end(), run_op);
+    int r = reg.run(vArgsBeforeDash.begin(), vArgsBeforeDash.end(), run_op);
     if (!reg.ok()) {
-        std::cout << "possible sub path: " << std::endl;
-        list(args);
+        // std::cout << "possible sub path: " << std::endl;
+        list(vArgsBeforeDash);
         return -1;
     }
     return r;

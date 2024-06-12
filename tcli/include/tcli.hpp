@@ -14,8 +14,8 @@
 
 namespace tcli {
 
-extern int argc;
-extern char** argv;
+extern int argc_raw;
+extern char** argv_raw;
 extern std::vector<std::string> args;
 
 struct node : ltz::proc_init::fn::node {
@@ -87,8 +87,6 @@ namespace ipc {
 int listen();
 int connect();
 }  // namespace ipc
-
-int run_op(ltz::proc_init::fn::node& lpif_node, std::vector<std::string>::iterator itl, std::vector<std::string>::iterator itr, std::vector<std::string>::iterator itm);
 
 int main(int argc, char* argv[]);
 

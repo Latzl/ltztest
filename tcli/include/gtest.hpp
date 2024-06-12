@@ -17,7 +17,7 @@ int test_with_filter(const std::string& suit = "", const std::string& test = "")
 
 #define TCLI_GTEST_ALL()                                    \
     TCLI_F(gtest) {                                         \
-        ::testing::InitGoogleTest(&tcli::argc, tcli::argv); \
+        ::testing::InitGoogleTest(&tcli::argc_raw, tcli::argv_raw); \
         return RUN_ALL_TESTS();                             \
     }
 

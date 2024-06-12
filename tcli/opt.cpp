@@ -5,13 +5,13 @@ namespace opt {
 
 Opt opt;
 
-void Opt::init(int argc, char* argv[]) {
+void Opt::init(std::vector<std::string> vArgs) {
     /* run all options register define on other source */
     auto& reg = TCLI_OPT_GET_REG();
     reg.run_all();
 
     /* init parser */
-    pparser_ = new boost::program_options::command_line_parser(argc, argv);
+    pparser_ = new boost::program_options::command_line_parser(vArgs);
     for (auto& opt_desc : opt_desc_list_) {
         opt_desc_.add(opt_desc);
     }

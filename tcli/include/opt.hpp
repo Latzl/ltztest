@@ -26,11 +26,7 @@ class Opt {
     boost::program_options::variables_map vm_;
 
    public:
-    // inline static Opt& instance() {
-    //     static Opt opt;
-    //     return opt;
-    // }
-    void init(int argc, char* argv[]);
+    void init(std::vector<std::string> vArgs);
     void parse();
 
     Opt& add_description(const boost::program_options::options_description& desc);

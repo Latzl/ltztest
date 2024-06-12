@@ -96,32 +96,28 @@ class reg {
         return pr.first;
     }
 
-    /* list */
     /*
-        @brief List children nodes' key of node specified by path
+        @brief Get keys of children nodes, specified by path
         @param path Path to register entry, require format like /a/b/c
      */
-    inline std::string list_children(const std::string &path) {
+    inline std::vector<std::string> get_children_keys(const std::string &path) {
         auto op = rt_.get_child_optional(typename reg_tree::path_type(path, '/'));
         if (!op) {
             err_msg = toStr(e = err::node_not_found);
-            return "";
+            return {};
         }
-        std::string s;
+        std::vector<std::string> v;
         for (auto &key : *op) {
-            s += key.first + "\n";
-        }
-        if (s.size()) {
-            s.pop_back();
+            v.push_back(key.first);
         }
         err_msg = toStr(e = err::ok);
-        return s;
+        return v;
     }
 
     template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline std::string list_children(It itl, It itr) {
+    inline std::vector<std::string> get_children_keys(It itl, It itr) {
         std::string path = str::join(itl, itr, "/");
-        return list_children(path);
+        return get_children_keys(path);
     }
 
    public:
