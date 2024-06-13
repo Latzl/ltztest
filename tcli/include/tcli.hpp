@@ -16,7 +16,7 @@ namespace tcli {
 
 extern int argc_raw;
 extern char** argv_raw;
-extern std::vector<std::string> args;
+extern std::vector<std::string> args_pass2fn, args_fn_path;
 
 struct node : ltz::proc_init::fn::node {
     std::string desc;
@@ -77,11 +77,11 @@ class Timer {
 
 // ltz::proc_init::Register& get_register();
 
-void list(const std::vector<std::string>& v_path);
+void list(const std::vector<std::string>& vArgsAsFnPath);
 
 void list_all();
 
-void prompt(const std::vector<std::string>& v);
+void prompt(const std::vector<std::string>& vArgsAsFnPath);
 
 namespace ipc {
 int listen();
