@@ -6,7 +6,7 @@ OBJ_DIR = $(BUILD_DIR)/obj
 TARGET_DIR = $(BUILD_DIR)/bin
 TARGET = $(TARGET_DIR)/tcli
 
-LIBS += -Wl,-Bstatic -ltcli -lboost_program_options -lgtest -Wl,-Bdynamic
+LIBS += -Wl,-Bstatic -ltcli -Wl,-Bdynamic
 LIBS += -lpthread -lrt
 
 HEADERS += $(wildcard $(TCLI_MKDIR)/third_party/ltz/*/*.hpp)
