@@ -13,7 +13,7 @@ namespace tcli {
 template <typename It, typename UnaryOp>
 inline std::string toStr(It itl, It itr, UnaryOp op) {
     std::string str;
-    for (It it; it != itr; it = std::next(it)) {
+    for (It it = itl; it != itr; it = std::next(it)) {
         str += op(it) + " ";
     }
     if (!str.empty()) {
@@ -28,7 +28,7 @@ inline std::string toStr(It itl, It itr) {
 }
 
 inline void log(const std::string& str) {
-    std::string sLogPath = "";
+    std::string sLogPath = "/tmp/log.txt";
     std::ofstream ofs(sLogPath, std::ios::app);
     if (!ofs) {
         std::cerr << "Failed to open: " << sLogPath << std::endl;
