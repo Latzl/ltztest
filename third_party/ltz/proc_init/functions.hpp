@@ -41,12 +41,13 @@ class fn_reg : public reg<fn::node> {
     inline int run(It itl, It itr, Op op) {
         auto pr = get(itl, itr);
         fn::node *pNode = pr.first;
+        It itm = pr.second;
+
         if (!pNode) {
             e = err::node_not_found;
             err_msg = toStr(e);
             return -1;
         }
-        It itm = pr.second;
 
         int nRet = op(*pNode, itl, itr, itm);
         e = err::ok;
