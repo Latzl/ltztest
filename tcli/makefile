@@ -6,6 +6,7 @@ OBJ_DIR = $(BUILD_DIR)/obj
 TARGET_DIR = $(BUILD_DIR)/bin
 TARGET = $(TARGET_DIR)/libtcli.a
 
+HEADERS += $(wildcard $(MKDIR)/../third_party/ltz/*/*.hpp)
 
 # third party
 THIRD_PARTY_LIB_DIR = /usr/local/lib
@@ -41,11 +42,14 @@ OBJS += $(OBJS_THIRD_PARTY)
 # tcli
 OBJS += $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(wildcard *.cpp))
 
-$(OBJ_DIR)/%.o: %.cpp
+HEADERS += $(wildcard $(MKDIR)/*.hpp)
+$(OBJ_DIR)/%.o: ./%.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(FLAGS) -c $< -o $@
 
-$(TARGET): $(OBJS) $(OBJS_BPO)
+
+# target
+$(TARGET): $(OBJS) $(OBJS_BPO) 
 	@mkdir -p $(TARGET_DIR)
 	ar -src $@ $^
 
@@ -53,9 +57,7 @@ $(TARGET): $(OBJS) $(OBJS_BPO)
 .DEFAULT_GOAL = all
 
 test: 
-	@echo $(OBJS_BPO)
-	@echo $(SLIB_BPO)
-	@echo $(OBJS)
+	@echo $(HEADERS)
 
 all: $(TARGET)
 
