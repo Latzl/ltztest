@@ -33,7 +33,7 @@ class Opt {
 
     Opt& add_pos_description(const std::string& name, int max_count);
 
-    std::string get_help();
+    std::string help();
 };
 
 extern Opt opt;

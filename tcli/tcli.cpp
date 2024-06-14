@@ -270,8 +270,7 @@ int main(int argc, char* argv[]) {
     }
 
     if (vm["help"].as<bool>() || args_fn_path.empty()) {
-        // todo rename get_help() to help()
-        std::cout << opt.get_help() << std::endl;
+        std::cout << opt.help() << std::endl;
         std::cout << "registered fuction tree: " << std::endl;
         tcli::list_all();
         return 0;

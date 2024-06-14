@@ -34,7 +34,7 @@ Opt& Opt::add_pos_description(const std::string& name, int max_count) {
     return *this;
 }
 
-std::string Opt::get_help() {
+std::string Opt::help() {
     std::stringstream ss;
     ss << opt_desc_;
     return ss.str();
