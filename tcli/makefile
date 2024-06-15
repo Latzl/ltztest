@@ -43,6 +43,7 @@ OBJS += $(OBJS_THIRD_PARTY)
 OBJS += $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(wildcard *.cpp))
 
 HEADERS += $(wildcard $(MKDIR)/*.hpp)
+HEADERS += $(wildcard $(MKDIR)/include/*.hpp)
 $(OBJ_DIR)/%.o: ./%.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(FLAGS) -c $< -o $@

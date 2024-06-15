@@ -189,7 +189,7 @@ int run_op(ltz::proc_init::fn::node& lpif_node, std::vector<std::string>::iterat
 
     Timer timer;
     nRet = nd.lpif_main(args_pass2fn);
-    ss << timer.end().report();
+    ss << timer.end().toStr_pass_time();
 
     std::cout << "======== "
               << "return value: " << nRet << ", time cost: " << ss.str()  //
