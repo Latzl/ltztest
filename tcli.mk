@@ -11,6 +11,7 @@ LIBS += -lpthread -lrt
 
 HEADERS += $(wildcard $(TCLI_MKDIR)/third_party/ltz/*/*.hpp)
 
+# call GET_OBJS,src_dir,created_obj_dir
 define GET_OBJS
 $(patsubst %.cpp, $(OBJ_DIR)/$(2)/%.o,$(notdir $(wildcard $(1)/*.cpp)))
 endef
@@ -20,16 +21,17 @@ $(OBJ_DIR)/%.o: ./%.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(FLAGS) -c $< -o $@
 
+OBJS += $(SUB_OBJS)
+
 PATH2TCLILIB = $(TCLI_MKDIR)/src/tcli/build/bin/libtcli.a
 
 $(TARGET): $(OBJS) $(PATH2TCLILIB)
 	@mkdir -p $(TARGET_DIR)
 	$(CXX) $(FLAGS) -o $@ $^ $(LIBS)
 
-.PHONY: clean test
+.PHONY: all clean test
+
+all : $(TARGET)
+
 clean:
 	rm -r $(BUILD_DIR)
-
-test: 
-	@echo $(OBJS)
-	@echo $(HEADERS)
