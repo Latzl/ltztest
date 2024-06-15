@@ -21,7 +21,6 @@ inline void **get_ppv(const std::string &name) {
 }  // namespace proc_init
 }  // namespace ltz
 
-// #define _LTZ_PI_PV(name) BOOST_PP_CAT(_lpi_pv_, name)
 #define _LTZ_PI_PV_GET_PPV_IMPL(_pv) ::ltz::proc_init::pv::get_ppv(BOOST_PP_STRINGIZE(_pv))
 #define _LTZ_PI_PV_HANDLER(handler, pv) BOOST_PP_CAT(pv, _handler_##handler)
 #define _LTZ_PI_PV_HANDLER_OBJ(handler, pv) BOOST_PP_CAT(pv, _handler_obj_##handler)
@@ -42,15 +41,16 @@ inline void **get_ppv(const std::string &name) {
 /* export */
 
 /*
-    @brief todo
+    @brief Define function body to handle ptr to ptr to void, which is guaranteed to be initialized.
     @param name unique name for pv that identify the handler
     @param pv unique name that identify the void ptr, which is to be handle.
-    @details todo
+    @details Prototype after macro expasnsion:
+        void pv_handle_fn_name(void **lpi_ppv);
  */
 #define LTZ_PI_PV_HANDLE(name, pv) _LTZ_PI_PV_HANDLE_IMPL(name, pv)
 
 /*
-    @brief get ptr to ptr to void
+    @brief Get ptr to ptr to void by pv
  */
 #define LTZ_PI_PV_GET_PPV(pv) _LTZ_PI_PV_GET_PPV_IMPL(pv)
 

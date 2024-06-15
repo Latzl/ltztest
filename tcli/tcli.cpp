@@ -122,7 +122,6 @@ int listen() {
             args_pass2fn.push_back(str);
         }
 
-        // todo about '--'
         reg.run(args_pass2fn.begin(), args_pass2fn.end(), run_op);
         if (!reg.ok()) {
             list(args_pass2fn);
@@ -188,8 +187,7 @@ int run_op(ltz::proc_init::fn::node& lpif_node, std::vector<std::string>::iterat
     ss.str("");
 
 
-    // todo
-    Timer timer{};
+    Timer timer;
     nRet = nd.lpif_main(args_pass2fn);
     ss << timer.end().report();
 
@@ -292,7 +290,6 @@ TCLI_OPT_FN(tcli_opt) {
         ("help,h", boost::program_options::bool_switch(), "Show this message then exit.")  //
         ("list,t", boost::program_options::bool_switch(), "List sub path of current given path then exit.")  //
         ("list-all,T", boost::program_options::bool_switch(), "List all registered function tree then exit. Node with * indicate that a function has registered on this node. Therefore, the path to this node can be the path to excutable function.")  //
-        // todo: deal with problem that pass args need double '--'
         ("fpath,f", boost::program_options::value<std::vector<std::string>>()->default_value(args_fn_path, "")->multitoken(), "Set function path to execute.")  //
         ("prompt,p", boost::program_options::bool_switch(), "Print the corresponding prompt description for the function path. Only TCLI_SET_PROMPT() specified by function path was used will take effect.")("silence,s", boost::program_options::bool_switch(), "Silence mode.")  //
         ("verbose,v", boost::program_options::bool_switch(), "Verbose mode.")  //

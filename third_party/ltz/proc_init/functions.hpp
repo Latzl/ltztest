@@ -1,3 +1,43 @@
+/*
+    @file functions.hpp
+
+    Define some macro for easy define and use function.
+
+    Usage:
+        1. Define your custom struct, called node. Custom node must derived from ltz::proc_init::fn::node.
+        2. Define your macro to define function body. Here are two template
+            2.1
+                #define MY_DEF(...)                                             \
+                    LTZ_PI_FN_NODE_CONSTRUCT(my_name, my_node, __VA_ARGS__);    \
+                    LTZ_PI_FN_DEF_INIT(my_name, __VA_ARGS__) {}                 \
+                    LTZ_PI_FN_DEF_CLEAN(my_name, __VA_ARGS__) {}                \
+                    LTZ_PI_FN_DEF_MAIN(my_name, __VA_ARGS__)
+            2.2
+                #define MY_DEF_WITH_OP(op, ...)                                     \
+                    LTZ_PI_FN_NODE_CONSTRUCT(my_name, my_node, __VA_ARGS__);        \
+                    LTZ_PI_FN_NODE_HANDLE(my_name, my_handle_name, __VA_ARGS__) {   \
+                        auto& node = dynamic_cast<my_node&>(lpif_node);             \
+                        op(node);                                                   \
+                    }                                                               \
+                    LTZ_PI_FN_DEF_INIT(my_name, __VA_ARGS__) {}                     \
+                    LTZ_PI_FN_DEF_CLEAN(my_name, __VA_ARGS__) {}                    \
+                    LTZ_PI_FN_DEF_MAIN(my_name, __VA_ARGS__)
+        3. Use your macro on global scope
+            3.1
+                MY_DEF(a, b, c){
+                    printf("Hello world");
+                    return 0;
+                }
+            3.2 
+                MY_DEF_WITH_OP([](my_node& node){ // do with node}, a , b, c){
+                    printf("Hello world");
+                    return 0;
+                }
+        4. Call fuction macro define.
+            int main(){
+                LTZ_PI_FN_GET_REG(my_name).run("a/b/c");
+            }
+ */
 #ifndef LTZ_PROC_INIT_FUNCTIONS_HPP
 #define LTZ_PROC_INIT_FUNCTIONS_HPP
 
@@ -72,8 +112,8 @@ class fn_reg : public reg<fn::node> {
     }
 
 
-    /* 
-        @brief todo
+    /*
+        @brief Run all registered function with op().
         @param op Function to call lpif_main()
             Prototype: int op(ltz::proc_init::fn::node& node);
      */
@@ -156,8 +196,6 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 
 #define _LTZ_PI_FN_GET_REG_IMPL(name) ::ltz::proc_init::fn::get_fn_reg(BOOST_PP_STRINGIZE(name))
 
-// std::cout << "At " << (void *)this << " construct: " << BOOST_PP_STRINGIZE(_LTZ_PI_FN_GET_ID(name, path)) << std::endl; \
-
 #define _LTZ_PI_FN_NODE_CONSTRUCT_IMPL(name, type, path)                                      \
     struct _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path)) : public type {                \
         _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path))() {                               \
@@ -188,7 +226,7 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 /* export */
 
 /*
-    @brief todo
+    @brief Get register obj by name.
     @param name Unique name that specify the register.
  */
 #define LTZ_PI_FN_GET_REG(name) _LTZ_PI_FN_GET_REG_IMPL(name)
@@ -201,10 +239,11 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 #define LTZ_PI_FN_NODE_CONSTRUCT(name, type, ...) _LTZ_PI_FN_NODE_CONSTRUCT_IMPL(name, type, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
 
 /*
-    @brief todo
+    @brief Define main function body.
     @param name Unique name that specify the register.
     @param ... Variadic param to specify path
-    @note Define body can use variable: lpif_args
+    @details Prototype after macro expansion:
+        int node_stru::lpif_main(const std::vector<std::string> &lpif_args);
  */
 #define LTZ_PI_FN_DEF_MAIN(name, ...) _LTZ_PI_FN_DEF_MAIN(name, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
 
@@ -212,9 +251,9 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 #define LTZ_PI_FN_DEF_CLEAN(name, ...) _LTZ_PI_FN_DEF_CLEAN(name, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
 
 /*
-    @brief todo
+    @brief Define function body that handle node in register, which is specified by name.
     @param name Unique name that specify the register.
-    @param handle_name Unique name for register indicated by name, handle_name descibe what will be handle to node.
+    @param handle_name Unique name for register indicated by name, handle_name descibe what is going to handle the node.
     @param ... Variadic param to specify path
  */
 #define LTZ_PI_FN_NODE_HANDLE(name, handle_name, ...) _LTZ_PI_FN_NODE_HANDLE_IMPL(name, handle_name, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
