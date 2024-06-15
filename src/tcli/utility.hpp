@@ -1,11 +1,29 @@
-#ifndef TCLI_UTILITY_HPP
-#define TCLI_UTILITY_HPP
+#ifndef SRC_TCLI_UTILITY_HPP
+#define SRC_TCLI_UTILITY_HPP
 
 #include <chrono>
 #include <sstream>
 #include <iomanip>
 
 namespace tcli {
+
+template <typename It, typename UnaryOp>
+inline std::string toStr(It itl, It itr, UnaryOp op) {
+    std::string str;
+    for (It it = itl; it != itr; it = std::next(it)) {
+        str += op(it) + " ";
+    }
+    if (!str.empty()) {
+        str.pop_back();
+    }
+    return str;
+}
+
+template <typename It>
+inline std::string toStr(It itl, It itr) {
+    return toStr(itl, itr, [](It it) { return *it; });
+}
+
 
 class Timer {
    public:

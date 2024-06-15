@@ -1,4 +1,5 @@
 MKDIR = $(shell dirname $(abspath $(lastword $(MAKEFILE_LIST))))
+ROOTDIR = $(MKDIR)/../..
 CXX = g++
 FLAGS = -g -O0 -std=c++11 -Wall
 BUILD_DIR = ./build
@@ -7,6 +8,7 @@ TARGET_DIR = $(BUILD_DIR)/bin
 TARGET = $(TARGET_DIR)/libtcli.a
 
 HEADERS += $(wildcard $(MKDIR)/../third_party/ltz/*/*.hpp)
+HEADERS += $(wildcard $(ROOTDIR)/include/tcli/*.hpp)
 
 # third party
 THIRD_PARTY_LIB_DIR = /usr/local/lib
@@ -43,7 +45,6 @@ OBJS += $(OBJS_THIRD_PARTY)
 OBJS += $(patsubst %.cpp, $(OBJ_DIR)/%.o, $(wildcard *.cpp))
 
 HEADERS += $(wildcard $(MKDIR)/*.hpp)
-HEADERS += $(wildcard $(MKDIR)/include/*.hpp)
 $(OBJ_DIR)/%.o: ./%.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(FLAGS) -c $< -o $@
