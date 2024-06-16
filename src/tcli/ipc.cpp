@@ -64,15 +64,26 @@ int listen() {
         if (!listening) {
             break;
         }
+
+        args_fn_path.clear();
         args_pass2fn.clear();
+        bool bArgsIsPath = true;
         for (auto s : *pvec) {
             std::string str(s.c_str());
-            args_pass2fn.push_back(str);
+            if (bArgsIsPath && str == "--") {
+                bArgsIsPath = false;
+                continue;
+            }
+            if (bArgsIsPath) {
+                args_fn_path.push_back(str);
+            } else {
+                args_pass2fn.push_back(str);
+            }
         }
 
-        reg.run(args_pass2fn.begin(), args_pass2fn.end(), run_op);
+        reg.run(args_fn_path.begin(), args_fn_path.end(), run_op);
         if (!reg.ok()) {
-            list(args_pass2fn);
+            list(args_fn_path);
         }
     }
 
@@ -91,8 +102,13 @@ int connect() {
         return -1;
     }
 
+    std::vector<std::string> args2pass = args_fn_path;
+    if (!args_pass2fn.empty()) {
+        args2pass.push_back("--");
+        args2pass.insert(args2pass.end(), args_pass2fn.begin(), args_pass2fn.end());
+    }
     pvec->clear();
-    for (auto s : args_pass2fn) {
+    for (auto s : args2pass) {
         string str(s.c_str(), alloc_char_inst);
         pvec->push_back(str);
     }
