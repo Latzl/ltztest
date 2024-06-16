@@ -7,6 +7,14 @@
 namespace ltz {
 namespace proc_init {
 
+namespace regi {
+namespace toStrRegFlag {
+const uint32_t mark_entity{1 << 0};
+const uint32_t address{1 << 1};
+const uint32_t default_flag{mark_entity};
+}  // namespace toStrRegFlag
+}  // namespace regi
+
 template <typename T>
 class reg {
    public:
@@ -121,11 +129,6 @@ class reg {
     }
 
    public:
-    struct toStrRegFlag {
-        static constexpr uint32_t mark_entity{1 << 0};
-        static constexpr uint32_t address{1 << 1};
-        static constexpr uint32_t default_flag{mark_entity};
-    };
     /*
         @brief Get registered info
         @details Get string of tree and its children, format like:
@@ -135,14 +138,14 @@ class reg {
             ...
         @param details_flag Flag that indicate how many infomation to be show.
      */
-    inline std::string toStr_registered(const std::string &tree_name = "tree", uint32_t details_flag = toStrRegFlag::default_flag) {
+    inline std::string toStr_registered(const std::string &tree_name = "tree", uint32_t details_flag = regi::toStrRegFlag::default_flag) {
         T *entry = rt_.template get_value<T *>();
         std::stringstream ss;
         ss << tree_name;
-        if (entry && details_flag & toStrRegFlag::mark_entity) {
+        if (entry && details_flag & regi::toStrRegFlag::mark_entity) {
             ss << "*";
         }
-        if (details_flag & toStrRegFlag::address) {
+        if (details_flag & regi::toStrRegFlag::address) {
             ss << "(0x" << std::hex << (uint64_t)&rt_ << ", 0x" << (uint64_t)entry << ")";
         }
         ss << "\n";
@@ -179,16 +182,16 @@ class reg {
         put_impl(std::next(itl), itr, entry, *opt);
     }
 
-    inline std::stringstream &toStr_registered_impl(std::stringstream &ss, reg_tree &tree, uint32_t details_flag = toStrRegFlag::default_flag, int depth = 0) {
+    inline std::stringstream &toStr_registered_impl(std::stringstream &ss, reg_tree &tree, uint32_t details_flag = regi::toStrRegFlag::default_flag, int depth = 0) {
         for (auto &pr : tree) {
             const std::string key_child = pr.first;
             reg_tree &tree_child = pr.second;
             T *entry_child = tree_child.template get_value<T *>();
             ss << std::string(depth * 2, ' ') << key_child;
-            if (entry_child && details_flag & toStrRegFlag::mark_entity) {
+            if (entry_child && details_flag & regi::toStrRegFlag::mark_entity) {
                 ss << "*";
             }
-            if (details_flag & toStrRegFlag::address) {
+            if (details_flag & regi::toStrRegFlag::address) {
                 ss << "(0x" << std::hex << (uint64_t)&tree_child << ", 0x" << (uint64_t)entry_child << ")";
             }
             ss << "\n";

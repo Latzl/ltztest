@@ -6,6 +6,7 @@
 
 #include <iostream>
 
+#include <ltz/proc_init/register.hpp>
 #include <boost/program_options.hpp>
 
 namespace tcli {
@@ -36,7 +37,7 @@ void list(const std::vector<std::string>& vArgsAsFnPath) {
 }
 
 void list_all() {
-    std::string s = TCLI_GET_REG().toStr_registered();
+    std::string s = TCLI_GET_REG().toStr_registered("root");
     if (!s.empty()) {
         std::cout << s << std::endl;
     }
@@ -207,7 +208,9 @@ TCLI_OPT_FN(tcli_opt) {
 }  // namespace tcli
 
 TCLI_FN_TCLI(toStr_registered_debug) {
-    std::cout << TCLI_GET_REG().toStr_registered("root") << std::endl;
+    namespace toflag = ltz::proc_init::regi::toStrRegFlag;
+    auto flag = toflag::default_flag | toflag::address;
+    std::cout << TCLI_GET_REG().toStr_registered("root", flag) << std::endl;
     return 0;
 }
 
