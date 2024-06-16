@@ -20,10 +20,10 @@ struct node : ltz::proc_init::fn::node {
 
 int main(int argc, char* argv[]);
 
+ltz::proc_init::fn_reg& get_register();
+
 }  // namespace tcli
 
-// todo
-#define TCLI_GET_REG() LTZ_PI_FN_GET_REG(tcli)
 #define TCLI_FN(...)                                           \
     LTZ_PI_FN_NODE_CONSTRUCT(tcli, ::tcli::node, __VA_ARGS__); \
     LTZ_PI_FN_DEF_INIT(tcli, __VA_ARGS__) {}                   \

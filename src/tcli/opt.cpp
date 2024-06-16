@@ -3,11 +3,16 @@
 namespace tcli {
 namespace opt {
 
+ltz::proc_init::fn_reg& get_register() {
+    auto& reg = LTZ_PI_FN_GET_REG(tcli_opt);
+    return reg;
+}
+
 Opt opt;
 
 void Opt::init(std::vector<std::string> vArgs) {
     /* run all options register define on other source */
-    auto& reg = TCLI_OPT_GET_REG();
+    auto& reg = get_register();
     reg.run_all();
 
     /* init parser */

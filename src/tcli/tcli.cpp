@@ -15,10 +15,15 @@ int argc_raw = 0;
 char** argv_raw = nullptr;
 std::vector<std::string> args_pass2fn, args_fn_path;
 
+ltz::proc_init::fn_reg& get_register() {
+    auto& reg = LTZ_PI_FN_GET_REG(tcli);
+    return reg;
+}
+
 const std::string LIST_HEADER = "Candidate nodes:";
 
 void list(const std::vector<std::string>& vArgsAsFnPath) {
-    std::vector<std::string> v = TCLI_GET_REG().get_children_keys(vArgsAsFnPath.begin(), vArgsAsFnPath.end());
+    std::vector<std::string> v = get_register().get_children_keys(vArgsAsFnPath.begin(), vArgsAsFnPath.end());
     std::string sOutput;
     for (auto& s : v) {
         sOutput += s + " ";
@@ -37,14 +42,14 @@ void list(const std::vector<std::string>& vArgsAsFnPath) {
 }
 
 void list_all() {
-    std::string s = TCLI_GET_REG().toStr_registered("root");
+    std::string s = get_register().toStr_registered("root");
     if (!s.empty()) {
         std::cout << s << std::endl;
     }
 }
 
 void prompt(const std::vector<std::string>& vArgsAsFnPath) {
-    auto pr = TCLI_GET_REG().get(vArgsAsFnPath.begin(), vArgsAsFnPath.end());
+    auto pr = get_register().get(vArgsAsFnPath.begin(), vArgsAsFnPath.end());
     auto pNode = pr.first;
     if (!pNode) {
         return;
@@ -116,7 +121,7 @@ static std::pair<std::vector<std::string>, std::vector<std::string>> divide_argv
 
 static std::pair<std::vector<std::string>, std::vector<std::string>> parse2args(const std::vector<std::string>& vArgsAsFnPath, const std::vector<std::string>& vArgsPass2Fn) {
     std::vector<std::string> vArgsAsFnPath_out, vArgsPass2Fn_out;
-    auto& reg = TCLI_GET_REG();
+    auto& reg = get_register();
     auto pr = reg.get(vArgsAsFnPath.begin(), vArgsAsFnPath.end());
     auto it = pr.second;
     if (it == vArgsAsFnPath.end()) {
@@ -177,7 +182,7 @@ int main(int argc, char* argv[]) {
         return 0;
     }
 
-    auto& reg = TCLI_GET_REG();
+    auto& reg = get_register();
     int r = reg.run(args_fn_path.begin(), args_fn_path.end(), run_op);
     if (!reg.ok()) {
         list(args_fn_path);
@@ -210,7 +215,7 @@ TCLI_OPT_FN(tcli_opt) {
 TCLI_FN_TCLI(toStr_registered_debug) {
     namespace toflag = ltz::proc_init::regi::toStrRegFlag;
     auto flag = toflag::default_flag | toflag::address;
-    std::cout << TCLI_GET_REG().toStr_registered("root", flag) << std::endl;
+    std::cout << tcli::get_register().toStr_registered("root", flag) << std::endl;
     return 0;
 }
 

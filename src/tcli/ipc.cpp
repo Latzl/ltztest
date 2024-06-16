@@ -58,7 +58,7 @@ int listen() {
     boost::interprocess::scoped_lock<boost::interprocess::interprocess_mutex> lock(*mtx);
 
     listening = true;
-    auto& reg = TCLI_GET_REG();
+    auto& reg = get_register();
     while (1) {
         cnd->wait(lock);
         if (!listening) {

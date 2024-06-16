@@ -8,11 +8,11 @@ namespace opt {
 
 struct node : public ltz::proc_init::fn::node {};
 
+ltz::proc_init::fn_reg &get_register();
+
 }  // namespace opt
 }  // namespace tcli
 
-// todo
-#define TCLI_OPT_GET_REG() LTZ_PI_FN_GET_REG(tcli_opt)
 #define TCLI_OPT_FN(...)                                                \
     LTZ_PI_FN_NODE_CONSTRUCT(tcli_opt, ::tcli::opt::node, __VA_ARGS__); \
     LTZ_PI_FN_DEF_INIT(tcli_opt, __VA_ARGS__) {}                        \
