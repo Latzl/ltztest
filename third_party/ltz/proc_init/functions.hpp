@@ -28,7 +28,7 @@
                     printf("Hello world");
                     return 0;
                 }
-            3.2 
+            3.2
                 MY_DEF_WITH_OP([](my_node& node){ // do with node}, a , b, c){
                     printf("Hello world");
                     return 0;
@@ -221,6 +221,12 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 #define _LTZ_PI_FN_DEF_INIT(name, path) void _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path))::lpif_init()
 #define _LTZ_PI_FN_DEF_CLEAN(name, path) void _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path))::lpif_clean()
 
+#define _LTZ_PI_FN_GET_NODE_IMPL(name, ...)                                   \
+    []() -> ::ltz::proc_init::fn::node * {                                    \
+        std::vector<std::string> vPath = {LTZ_PP_ENCLOSE_ELEMS(__VA_ARGS__)}; \
+        return _LTZ_PI_FN_GET_REG_IMPL(name).get(vPath.begin(), vPath.end()).first; \
+    }()
+
 
 /* ********** */
 /* export */
@@ -243,7 +249,7 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
     @param name Unique name that specify the register.
     @param ... Variadic param to specify path
     @details Prototype after macro expansion:
-        int node_stru::lpif_main(const std::vector<std::string> &lpif_args);
+        int <node_stru>::lpif_main(const std::vector<std::string> &lpif_args);
  */
 #define LTZ_PI_FN_DEF_MAIN(name, ...) _LTZ_PI_FN_DEF_MAIN(name, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
 
@@ -254,8 +260,15 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
     @brief Define function body that handle node in register, which is specified by name.
     @param name Unique name that specify the register.
     @param handle_name Unique name for register indicated by name, handle_name descibe what is going to handle the node.
-    @param ... Variadic param to specify path
+    @param ... Variadic to specify path
+    @details Prototype after macro expansion:
+        void <node_id>_handler_fn_<handle_name>(ltz::proc_init::fn::node & lpif_node)
  */
 #define LTZ_PI_FN_NODE_HANDLE(name, handle_name, ...) _LTZ_PI_FN_NODE_HANDLE_IMPL(name, handle_name, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
+
+/*
+    @brief Get registered function node by name and path
+ */
+#define LTZ_PI_FN_GET_NODE(name, ...) _LTZ_PI_FN_GET_NODE_IMPL(name, __VA_ARGS__)
 
 #endif
