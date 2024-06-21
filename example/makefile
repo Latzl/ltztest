@@ -1,4 +1,4 @@
-SUB_OBJS += $(call GET_OBJS,./gtest/,gtest)
+OBJS += $(call GET_OBJS,./gtest/,gtest)
 
 include ../tcli.mk
 

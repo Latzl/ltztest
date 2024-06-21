@@ -22,8 +22,6 @@ $(OBJ_DIR)/%.o: ./%.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)
 	$(CXX) $(FLAGS) -c $< -o $@
 
-OBJS += $(SUB_OBJS)
-
 PATH2TCLILIB = $(TCLI_MKDIR)/src/tcli/build/bin/libtcli.a
 
 $(TARGET): $(OBJS) $(PATH2TCLILIB)
