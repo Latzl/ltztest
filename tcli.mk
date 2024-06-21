@@ -10,6 +10,7 @@ LIBS += -Wl,-Bstatic -ltcli -Wl,-Bdynamic
 LIBS += -lpthread -lrt
 
 HEADERS += $(wildcard $(TCLI_MKDIR)/third_party/ltz/*/*.hpp)
+HEADERS += $(wildcard $(TCLI_MKDIR)/include/tcli/*.hpp)
 
 # call GET_OBJS,src_dir,created_obj_dir
 define GET_OBJS
@@ -35,3 +36,5 @@ all : $(TARGET)
 
 clean:
 	rm -r $(BUILD_DIR)
+
+test:
