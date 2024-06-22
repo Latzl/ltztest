@@ -71,17 +71,17 @@ class fn_reg : public reg<fn::node> {
 
     /*
         @brief Run lpif_main of node specified by iterator
-        @param itl
-        @param itr
+        @param first
+        @param last
         @param op Function to do something and call lpif_main and do something after call lpif_main.
-            Prototype: int op(ltz::proc_init::fn::node &lpif_node, It itl, It itr, It itm);
+            Prototype: int op(ltz::proc_init::fn::node &lpif_node, InputIt first, InputIt last, InputIt middle_it);
         @todo The first parameter in op is fn::node, it cause that code in definition of op have to dynamic_cast to custom node. Find way to suport custom node as parameter of op.
      */
-    template <typename It, typename Op, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline int run(It itl, It itr, Op op) {
-        auto pr = get(itl, itr);
+    template <typename InputIt, typename Op, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
+    inline int run(InputIt first, InputIt last, Op op) {
+        auto pr = get(first, last);
         fn::node *pNode = pr.first;
-        It itm = pr.second;
+        InputIt middle_it = pr.second;
 
         if (!pNode) {
             e = err::node_not_found;
@@ -89,18 +89,18 @@ class fn_reg : public reg<fn::node> {
             return -1;
         }
 
-        int nRet = op(*pNode, itl, itr, itm);
+        int nRet = op(*pNode, first, last, middle_it);
         e = err::ok;
         err_msg = toStr(e);
         return nRet;
     }
 
-    template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline int run(It itl, It itr) {
-        return run(itl, itr, [](ltz::proc_init::fn::node &node, It &itl, It itr, It itm) -> int {
+    template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
+    inline int run(InputIt first, InputIt last) {
+        return run(first, last, [](ltz::proc_init::fn::node &node, InputIt first, InputIt last, InputIt middle_it) -> int {
             int nRet = 0;
             node.lpif_init();
-            nRet = node.lpif_main(std::vector<std::string>{itm, itr});
+            nRet = node.lpif_main(std::vector<std::string>{middle_it, last});
             node.lpif_clean();
             return nRet;
         });
@@ -161,10 +161,10 @@ inline fn_reg &get_fn_reg(const std::string &name) {
 /*
     @brief Get node specify by iterator. If node is not exist, create it.
  */
-template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-inline fn::node &get_node(const std::string &reg_name, It itl, It itr) {
+template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
+inline fn::node &get_node(const std::string &reg_name, InputIt first, InputIt last) {
     auto &fnreg = get_fn_reg(reg_name);
-    auto pr = fnreg.get(itl, itr);
+    auto pr = fnreg.get(first, last);
     fn::node *pNode = pr.first;
     if (!pNode) {
         throw std::runtime_error("get_node: node not exist");
