@@ -50,4 +50,8 @@ ltz::proc_init::fn_reg& get_register();
     LTZ_PI_FN_DEF_CLEAN(tcli, __VA_ARGS__) {}                  \
     LTZ_PI_FN_DEF_MAIN(tcli, __VA_ARGS__)
 
+/*
+    @brief Run tcli function registed.
+ */
+#define TCLI_RF(lpif_args, ...) LTZ_PI_FN_RUN(lpif_args, tcli, __VA_ARGS__)
 #endif

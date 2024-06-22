@@ -227,6 +227,14 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
         return _LTZ_PI_FN_GET_REG_I(name).get(vPath.begin(), vPath.end()).first; \
     }()
 
+#define _LTZ_PI_FN_RUN_I(lpif_args, name, ...)                     \
+    [](const std::vector<std::string> _lpif_args) -> int {         \
+        auto lpif_node = _LTZ_PI_FN_GET_NODE_I(name, __VA_ARGS__); \
+        if (!lpif_node) {                                          \
+            return -1;                                             \
+        }                                                          \
+        return lpif_node->lpif_main(_lpif_args);                   \
+    }(lpif_args)
 
 /* ********** */
 /* export */
@@ -270,5 +278,10 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
     @brief Get registered function node by name and path
  */
 #define LTZ_PI_FN_GET_NODE(name, ...) _LTZ_PI_FN_GET_NODE_I(name, __VA_ARGS__)
+
+/*
+    @brief Run function
+ */
+#define LTZ_PI_FN_RUN(lpif_args, name, ...) _LTZ_PI_FN_RUN_I(lpif_args, name, __VA_ARGS__)
 
 #endif
