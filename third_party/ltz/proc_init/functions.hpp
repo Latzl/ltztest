@@ -33,7 +33,7 @@
                     printf("Hello world");
                     return 0;
                 }
-        4. Call fuction macro define.
+        4. Call fuction that your macro define.
             int main(){
                 LTZ_PI_FN_GET_REG(my_name).run("a/b/c");
             }

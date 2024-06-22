@@ -7,10 +7,10 @@
 
 namespace tcli {
 
-template <typename It, typename UnaryOp>
-inline std::string toStr(It itl, It itr, UnaryOp op) {
+template <typename InputIt, typename UnaryOp>
+inline std::string toStr(InputIt first, InputIt last, UnaryOp op) {
     std::string str;
-    for (It it = itl; it != itr; it = std::next(it)) {
+    for (InputIt it = first; it != last; it = std::next(it)) {
         str += op(it) + " ";
     }
     if (!str.empty()) {
@@ -19,9 +19,9 @@ inline std::string toStr(It itl, It itr, UnaryOp op) {
     return str;
 }
 
-template <typename It>
-inline std::string toStr(It itl, It itr) {
-    return toStr(itl, itr, [](It it) { return *it; });
+template <typename InputIt>
+inline std::string toStr(InputIt first, InputIt last) {
+    return toStr(first, last, [](InputIt it) { return *it; });
 }
 
 

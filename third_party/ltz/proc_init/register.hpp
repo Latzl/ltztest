@@ -65,9 +65,9 @@ class reg {
      @brief put ptr to T
      @note prefer to use this function rather than boost::property_tree:put to ensure ptr to T of path node is null
     */
-    template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline void put(It itl, It itr, T *entry = nullptr) {
-        put_impl(itl, itr, entry, rt_);
+    template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
+    inline void put(InputIt first, InputIt last, T *entry = nullptr) {
+        put_impl(first, last, entry, rt_);
     }
 
     inline void put(const std::string &path, T *entry = nullptr, const std::string &path_sep = "/") {
@@ -76,26 +76,26 @@ class reg {
     }
 
     /* get */
-    template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline std::pair<T *, It> get(It itl, It itr, reg_tree &tree) {
-        while (itl != itr && *itl == "") {
-            itl = std::next(itl);
+    template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
+    inline std::pair<T *, InputIt> get(InputIt first, InputIt last, reg_tree &tree) {
+        while (first != last && *first == "") {
+            first++;
         }
-        if (itl == itr) {
+        if (first == last) {
             err_msg = toStr(e = err::ok);
-            return {tree.template get_value<T *>(to_entry_translator()), itl};
+            return {tree.template get_value<T *>(to_entry_translator()), first};
         }
-        auto opt = tree.get_child_optional(*itl);
+        auto opt = tree.get_child_optional(*first);
         if (!opt) {
             err_msg = toStr(e = err::ok);
-            return {tree.template get_value<T *>(to_entry_translator()), itl};
+            return {tree.template get_value<T *>(to_entry_translator()), first};
         }
-        return get(std::next(itl), itr, *opt);
+        return get(++first, last, *opt);
     }
 
-    template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline std::pair<T *, It> get(It itl, It itr) {
-        return get(itl, itr, rt_);
+    template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
+    inline std::pair<T *, InputIt> get(InputIt first, InputIt last) {
+        return get(first, last, rt_);
     }
 
     inline T *get(const std::string &path, const std::string &path_sep = "/") {
@@ -122,9 +122,9 @@ class reg {
         return v;
     }
 
-    template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline std::vector<std::string> get_children_keys(It itl, It itr) {
-        std::string path = str::join(itl, itr, "/");
+    template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
+    inline std::vector<std::string> get_children_keys(InputIt first, InputIt last) {
+        std::string path = str::join(first, last, "/");
         return get_children_keys(path);
     }
 
@@ -160,13 +160,13 @@ class reg {
 
     /* helper */
    private:
-    template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type * = nullptr>
-    inline void put_impl(It itl, It itr, T *entry, reg_tree &tree) {
+    template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
+    inline void put_impl(InputIt first, InputIt last, T *entry, reg_tree &tree) {
         // consider path: ////ab//c//d///
-        while (itl != itr && *itl == "") {
-            itl = std::next(itl);
+        while (first != last && *first == "") {
+            first++;
         }
-        if (itl == itr) {
+        if (first == last) {
             auto val_opt = tree.template get_value_optional<T *>(to_entry_translator());
             if (val_opt && *val_opt) {
                 throw std::runtime_error("duplicate path!");
@@ -175,11 +175,11 @@ class reg {
             err_msg = toStr(e = err::ok);
             return;
         }
-        auto opt = tree.get_child_optional(*itl);
+        auto opt = tree.get_child_optional(*first);
         if (!opt) {
-            opt = tree.put_child(*itl, reg_tree{nullptr});
+            opt = tree.put_child(*first, reg_tree{nullptr});
         }
-        put_impl(std::next(itl), itr, entry, *opt);
+        put_impl(++first, last, entry, *opt);
     }
 
     inline std::stringstream &toStr_registered_impl(std::stringstream &ss, reg_tree &tree, uint32_t details_flag = regi::toStrRegFlag::default_flag, int depth = 0) {

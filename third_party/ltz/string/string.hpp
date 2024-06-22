@@ -28,10 +28,10 @@ inline std::vector<std::string> split(const std::string &src, const std::string 
     return vRet;
 }
 
-template <typename It, typename UnaryOp>
-inline std::string join(It first, It last, const std::string &delimiter, UnaryOp uop) {
+template <typename InputIt, typename UnaryOp>
+inline std::string join(InputIt first, InputIt last, const std::string &delimiter, UnaryOp uop) {
     std::string s;
-    for (It it = first; it != last; it = std::next(it)) {
+    for (InputIt it = first; it != last; it = std::next(it)) {
         s += uop(it) + delimiter;
     }
     if (first != last && s.size()) {
@@ -40,9 +40,9 @@ inline std::string join(It first, It last, const std::string &delimiter, UnaryOp
     return s;
 }
 
-template <typename It>
-inline std::string join(It first, It last, const std::string &delimiter) {
-    return join(first, last, delimiter, [](It it) { return *it; });
+template <typename InputIt>
+inline std::string join(InputIt first, InputIt last, const std::string &delimiter) {
+    return join(first, last, delimiter, [](InputIt it) { return *it; });
 }
 
 }  // namespace str

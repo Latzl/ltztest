@@ -62,12 +62,12 @@ void prompt(const std::vector<std::string>& vArgsAsFnPath) {
 }
 
 
-template <typename It, typename std::enable_if<std::is_same<typename std::iterator_traits<It>::value_type, std::string>::value>::type* = nullptr>
-std::string path2str(It itl, It itr) {
+template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type* = nullptr>
+std::string path2str(InputIt first, InputIt last) {
     std::stringstream ss;
-    while (itl != itr) {
-        ss << *itl << "/";
-        itl = std::next(itl);
+    while (first != last) {
+        ss << *first << "/";
+        first = std::next(first);
     }
     std::string s = ss.str();
     if (s.size()) {
@@ -76,17 +76,17 @@ std::string path2str(It itl, It itr) {
     return s;
 }
 
-int run_op(ltz::proc_init::fn::node& lpif_node, std::vector<std::string>::iterator itl, std::vector<std::string>::iterator itr, std::vector<std::string>::iterator itm) {
+int run_op(ltz::proc_init::fn::node& lpif_node, std::vector<std::string>::iterator first, std::vector<std::string>::iterator last, std::vector<std::string>::iterator midleIt) {
     auto& nd = dynamic_cast<node&>(lpif_node);
     int nRet = 0;
     std::stringstream ss;
 
-    if (itm != itr) {
+    if (midleIt != last) {
         /* It may something wrong in parse2args() */
         throw std::runtime_error("parse args error before");
     }
 
-    ss << "======== " << path2str(itl, itr);
+    ss << "======== " << path2str(first, last);
     if (!args_pass2fn.empty()) {
         ss << " -- " << ltz::str::join(args_pass2fn.begin(), args_pass2fn.end(), " ");
     }
