@@ -23,19 +23,22 @@ class reg {
 
     /* error */
    public:
-    enum class err {
+    enum class err : uint32_t {
+        unknown,
         ok,
         node_not_found,
     };
 
     inline std::string toStr(err e) {
         switch (e) {
+            case err::unknown:
+                return "unknown";
             case err::ok:
                 return "ok";
             case err::node_not_found:
                 return "node not found";
             default:
-                return "unknown";
+                throw std::domain_error("unknown error: " + std::to_string((uint32_t)e));
         }
     }
     err e{err::ok};

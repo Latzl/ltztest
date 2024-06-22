@@ -76,17 +76,12 @@ std::string path2str(InputIt first, InputIt last) {
     return s;
 }
 
-int run_op(ltz::proc_init::fn::node& lpif_node, std::vector<std::string>::iterator first, std::vector<std::string>::iterator last, std::vector<std::string>::iterator midleIt) {
+int run_op(ltz::proc_init::fn::node& lpif_node) {
     auto& nd = dynamic_cast<node&>(lpif_node);
     int nRet = 0;
     std::stringstream ss;
 
-    if (midleIt != last) {
-        /* It may something wrong in parse2args() */
-        throw std::runtime_error("parse args error before");
-    }
-
-    ss << "======== " << path2str(first, last);
+    ss << "======== " << path2str(args_fn_path.begin(), args_fn_path.end());
     if (!args_pass2fn.empty()) {
         ss << " -- " << ltz::str::join(args_pass2fn.begin(), args_pass2fn.end(), " ");
     }
