@@ -68,14 +68,29 @@ class fn_reg : public reg<fn::node> {
    public:
     fn_reg() = default;
     ~fn_reg() = default;
+    using reg_p = reg<fn::node>;
 
+    /* error */
+   public:
+    struct error : public reg_p::error {
+        static const err_t function_invalid = -101;
+    };
+
+    inline std::string errstr() {
+        switch (err) {
+            case error::function_invalid:
+                return "function invalid";
+            default:
+                return reg_p::errstr();
+        }
+    }
     /*
         @brief Run lpif_main of node specified by iterator
         @param first
         @param last
         @param op Function to do something and call lpif_main and do something after call lpif_main.
         @return Return value of lpif_main if run successfully. Return -1 if
-            1. node not found
+            1. node not found, and set err to error::function_invalid
             2. op is not callable, and set error to err::no_valid_function
         @todo The first parameter in op is fn::node, it cause that code in definition of op have to dynamic_cast to custom node. Find way to suport custom node as parameter of op.
         @todo Error handle to fn_reg
@@ -83,19 +98,20 @@ class fn_reg : public reg<fn::node> {
     template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
     inline int run(InputIt first, InputIt last, std::function<int(ltz::proc_init::fn::node &)> op) {
         if (!op) {
+            err = error::function_invalid;
             return -1;
         }
 
         auto pr = get(first, last);
         fn::node *pNode = pr.first;
         if (!pNode) {
-            err_msg = toStr(e = err::node_not_found);
+            err = error::function_invalid;
             return -1;
         }
 
         int nRet = op(*pNode);
 
-        err_msg = toStr(e = err::ok);
+        err = error::ok;
 
         return nRet;
     }

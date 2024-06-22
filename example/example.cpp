@@ -7,7 +7,7 @@
 #define DF_EXAMPLE(str, ...) TCLI_DF(str, example, __VA_ARGS__)
 
 DF_EXAMPLE(R"(Just print hello world.
-Usage: path2this)",
+    Usage: path2this)",
     print, hello_world) {
     std::cout << "Hello, world!" << std::endl;
     return 0;
@@ -32,4 +32,9 @@ DF_EXAMPLE(R"(Print args.
 
 FN_EXAMPLE(directly_use, by_macro, print, args) {
     return TCLI_RF(lpif_args, example, print, args);
+}
+
+DF_EXAMPLE("Usually print ok.", print, error) {
+    std::cout << "With error: " << tcli::get_register().err << ", " << tcli::get_register().errstr() << std::endl;
+    return 0;
 }

@@ -23,26 +23,42 @@ class reg {
 
     /* error */
    public:
-    enum class err : uint32_t {
-        unknown,
-        ok,
-        node_not_found,
-    };
+    // enum class err : uint32_t {
+    //     unknown,
+    //     ok,
+    //     node_not_found,
+    // };
 
-    inline std::string toStr(err e) {
-        switch (e) {
-            case err::unknown:
-                return "unknown";
-            case err::ok:
+    // err e{err::ok};
+    // std::string err_msg;
+
+    // inline std::string toStr(err e) {
+    //     return "";
+    // }
+    using err_t = int;
+    struct error {
+        static const err_t ok = 0;
+        static const err_t unknown = -1;
+        static const err_t node_not_found = -2;
+        /* reserve to -100, derived class should start at -101 */
+    };
+    err_t err{error::ok};
+
+    bool ok() {
+        return err == error::ok;
+    }
+
+    inline std::string errstr() {
+        switch (err) {
+            case error::ok:
                 return "ok";
-            case err::node_not_found:
+            case error::node_not_found:
                 return "node not found";
+            case error::unknown:
             default:
-                throw std::domain_error("unknown error: " + std::to_string((uint32_t)e));
+                return "unknown";
         }
     }
-    err e{err::ok};
-    std::string err_msg{toStr(e)};
 
    protected:
     using reg_tree = boost::property_tree::basic_ptree<std::string, T *>;
@@ -59,10 +75,6 @@ class reg {
     };
 
    public:
-    bool ok() {
-        return e == err::ok;
-    }
-
     /* put */
     /*
      @brief put ptr to T
@@ -85,12 +97,12 @@ class reg {
             first++;
         }
         if (first == last) {
-            err_msg = toStr(e = err::ok);
+            err = error::ok;
             return {tree.template get_value<T *>(to_entry_translator()), first};
         }
         auto opt = tree.get_child_optional(*first);
         if (!opt) {
-            err_msg = toStr(e = err::ok);
+            err = error::ok;
             return {tree.template get_value<T *>(to_entry_translator()), first};
         }
         return get(++first, last, *opt);
@@ -114,14 +126,16 @@ class reg {
     inline std::vector<std::string> get_children_keys(const std::string &path) {
         auto op = rt_.get_child_optional(typename reg_tree::path_type(path, '/'));
         if (!op) {
-            err_msg = toStr(e = err::node_not_found);
+            err = error::node_not_found;
             return {};
         }
         std::vector<std::string> v;
         for (auto &key : *op) {
             v.push_back(key.first);
         }
-        err_msg = toStr(e = err::ok);
+
+        err = error::ok;
+
         return v;
     }
 
@@ -157,7 +171,8 @@ class reg {
         if (s.size()) {
             s.pop_back();
         }
-        err_msg = toStr(e = err::ok);
+
+        err = error::ok;
         return s;
     }
 
@@ -175,7 +190,8 @@ class reg {
                 throw std::runtime_error("duplicate path!");
             }
             tree.put_value(entry, to_entry_translator());
-            err_msg = toStr(e = err::ok);
+
+            err = error::ok;
             return;
         }
         auto opt = tree.get_child_optional(*first);
