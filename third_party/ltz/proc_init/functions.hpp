@@ -194,12 +194,12 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 #define _LTZ_PI_FN_REG_HANDLER_OBJ(handler, id) BOOST_PP_CAT(id, _handler_##handler##_obj)
 #define _LTZ_PI_FN_REG_HANDLE_FN(handler, id) BOOST_PP_CAT(id, _handle_fn_##handler)
 
-#define _LTZ_PI_FN_GET_REG_IMPL(name) ::ltz::proc_init::fn::get_fn_reg(BOOST_PP_STRINGIZE(name))
+#define _LTZ_PI_FN_GET_REG_I(name) ::ltz::proc_init::fn::get_fn_reg(BOOST_PP_STRINGIZE(name))
 
-#define _LTZ_PI_FN_NODE_CONSTRUCT_IMPL(name, type, path)                                      \
+#define _LTZ_PI_FN_NODE_CONSTRUCT_I(name, type, path)                                         \
     struct _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path)) : public type {                \
         _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path))() {                               \
-            auto &reg = _LTZ_PI_FN_GET_REG_IMPL(name);                                        \
+            auto &reg = _LTZ_PI_FN_GET_REG_I(name);                                           \
             reg.put(BOOST_PP_STRINGIZE(path), this, BOOST_PP_STRINGIZE(_LTZ_PI_FN_PATH_SEP)); \
         }                                                                                     \
         void lpif_init() override;                                                            \
@@ -207,7 +207,7 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
         void lpif_clean() override;                                                           \
     } _LTZ_PI_FN_NODE_STRU_OBJ(_LTZ_PI_FN_GET_ID(name, path))
 
-#define _LTZ_PI_FN_NODE_HANDLE_IMPL(name, handle_name, path)                                                                                                                \
+#define _LTZ_PI_FN_NODE_HANDLE_I(name, handle_name, path)                                                                                                                   \
     void _LTZ_PI_FN_REG_HANDLE_FN(handle_name, _LTZ_PI_FN_GET_ID(name, path))(::ltz::proc_init::fn::node &);                                                                \
     struct _LTZ_PI_FN_REG_HANDLER(handle_name, _LTZ_PI_FN_GET_ID(name, path)) {                                                                                             \
         _LTZ_PI_FN_REG_HANDLER(handle_name, _LTZ_PI_FN_GET_ID(name, path))() {                                                                                              \
@@ -221,10 +221,10 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 #define _LTZ_PI_FN_DEF_INIT(name, path) void _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path))::lpif_init()
 #define _LTZ_PI_FN_DEF_CLEAN(name, path) void _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path))::lpif_clean()
 
-#define _LTZ_PI_FN_GET_NODE_IMPL(name, ...)                                   \
-    []() -> ::ltz::proc_init::fn::node * {                                    \
-        std::vector<std::string> vPath = {LTZ_PP_ENCLOSE_ELEMS(__VA_ARGS__)}; \
-        return _LTZ_PI_FN_GET_REG_IMPL(name).get(vPath.begin(), vPath.end()).first; \
+#define _LTZ_PI_FN_GET_NODE_I(name, ...)                                         \
+    []() -> ::ltz::proc_init::fn::node * {                                       \
+        std::vector<std::string> vPath = {LTZ_PP_ENCLOSE_ELEMS(__VA_ARGS__)};    \
+        return _LTZ_PI_FN_GET_REG_I(name).get(vPath.begin(), vPath.end()).first; \
     }()
 
 
@@ -235,14 +235,14 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
     @brief Get register obj by name.
     @param name Unique name that specify the register.
  */
-#define LTZ_PI_FN_GET_REG(name) _LTZ_PI_FN_GET_REG_IMPL(name)
+#define LTZ_PI_FN_GET_REG(name) _LTZ_PI_FN_GET_REG_I(name)
 
 /*
     @brief Construct node
     @param name
     @param type Must derived from ltz::proc_init::fn::node
  */
-#define LTZ_PI_FN_NODE_CONSTRUCT(name, type, ...) _LTZ_PI_FN_NODE_CONSTRUCT_IMPL(name, type, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
+#define LTZ_PI_FN_NODE_CONSTRUCT(name, type, ...) _LTZ_PI_FN_NODE_CONSTRUCT_I(name, type, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
 
 /*
     @brief Define main function body.
@@ -264,11 +264,11 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
     @details Prototype after macro expansion:
         void <node_id>_handler_fn_<handle_name>(ltz::proc_init::fn::node & lpif_node)
  */
-#define LTZ_PI_FN_NODE_HANDLE(name, handle_name, ...) _LTZ_PI_FN_NODE_HANDLE_IMPL(name, handle_name, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
+#define LTZ_PI_FN_NODE_HANDLE(name, handle_name, ...) _LTZ_PI_FN_NODE_HANDLE_I(name, handle_name, _LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
 
 /*
     @brief Get registered function node by name and path
  */
-#define LTZ_PI_FN_GET_NODE(name, ...) _LTZ_PI_FN_GET_NODE_IMPL(name, __VA_ARGS__)
+#define LTZ_PI_FN_GET_NODE(name, ...) _LTZ_PI_FN_GET_NODE_I(name, __VA_ARGS__)
 
 #endif
