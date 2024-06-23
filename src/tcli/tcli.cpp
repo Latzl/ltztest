@@ -22,11 +22,26 @@ ltz::proc_init::fn_reg& get_register() {
 
 const std::string LIST_HEADER = "Candidate nodes:";
 
-void list(const std::vector<std::string>& vArgsAsFnPath) {
-    std::vector<std::string> v = get_register().get_children_keys(vArgsAsFnPath.begin(), vArgsAsFnPath.end());
+std::vector<std::string> get_registered_node_at(const std::vector<std::string>& vArgsAsFnPath) {
+    namespace lpi = ltz::proc_init;
+    using lpir_reg = lpi::fn_reg::reg_p;
+    std::vector<std::string> vNodes;
+
+    auto fn = [&vNodes](lpir_reg::reg_tree& tree, const lpir_reg::for_each_ctx& ctx) { vNodes.push_back(ctx.node_name); };
+
+    tcli::get_register().for_each_at(vArgsAsFnPath, fn, 1);
+    if (!tcli::get_register().ok()) {
+        std::cerr << "something wrong?" << std::endl;
+    }
+
+    return vNodes;
+}
+
+void list_at(const std::vector<std::string>& vArgsAsFnPath) {
+    std::vector<std::string> v = get_registered_node_at(vArgsAsFnPath);
     std::string sOutput;
     for (auto& s : v) {
-        sOutput += s + " ";
+        sOutput += s + "\t";
     }
     if (!sOutput.empty()) {
         sOutput.pop_back();
@@ -41,24 +56,76 @@ void list(const std::vector<std::string>& vArgsAsFnPath) {
     std::cout << sOutput << std::endl;
 }
 
+using list_flag_t = uint32_t;
+struct list_flag {
+    static const list_flag_t func = (1 << 0);
+    static const list_flag_t desc = (1 << 1);
+    static const list_flag_t addr = (1 << 2);
+
+    static const list_flag_t dflt = (func | desc);
+};
+std::string get_registered_node_all(list_flag_t flag) {
+    namespace lpi = ltz::proc_init;
+    using lpir_reg = lpi::fn_reg::reg_p;
+    std::stringstream ss;
+    ss << "tcli\n";
+    auto fn = [&ss, flag](lpir_reg::reg_tree& tree, const lpir_reg::for_each_ctx& ctx) {
+        lpi::fn::node* lpif_node = tree.get_value<lpi::fn::node*>();
+        auto pNode = dynamic_cast<tcli::node*>(lpif_node);
+
+        ss << std::string((ctx.depth + 1) * 2, ' ') << ctx.node_name;
+
+        if (flag && pNode) {
+            ss << " {";
+            std::string sTmp;
+            if (flag & list_flag::func) {
+                sTmp += "f, ";
+            }
+            if (flag & list_flag::desc && !pNode->tcli_desc.empty()) {
+                sTmp += "d, ";
+            }
+            if (flag & list_flag::addr) {
+                std::stringstream ss_tmp;
+                ss_tmp << "a[" << std::hex << (uint64_t)&lpif_node << "], ";
+                sTmp += ss_tmp.str();
+            }
+            if (!sTmp.empty()) {
+                sTmp.pop_back();
+                sTmp.pop_back();
+            }
+            ss << sTmp;
+            ss << "}";
+        }
+
+        ss << "\n";
+    };
+
+    tcli::get_register().for_each(fn);
+
+    std::string s = std::move(ss.str());
+    if (s.back() == '\n') {
+        s.pop_back();
+    }
+
+    return s;
+}
+
 void list_all() {
-    std::string s = get_register().toStr_registered("root");
+    std::string s = get_registered_node_all(list_flag::dflt);
     if (!s.empty()) {
         std::cout << s << std::endl;
     }
 }
 
+
 void prompt(const std::vector<std::string>& vArgsAsFnPath) {
     auto pr = get_register().get(vArgsAsFnPath.begin(), vArgsAsFnPath.end());
-    auto pNode = pr.first;
-    if (!pNode) {
+    auto lpif_node = pr.first;
+    auto pNode = dynamic_cast<tcli::node*>(lpif_node);
+    if (!pNode || pNode->tcli_desc.empty()) {
         return;
     }
-    auto& node = *dynamic_cast<tcli::node*>(pNode);
-    if (node.tcli_desc.empty()) {
-        return;
-    }
-    std::cout << node.tcli_desc << std::endl;
+    std::cout << pNode->tcli_desc << std::endl;
 }
 
 
@@ -81,6 +148,7 @@ int run_op(ltz::proc_init::fn::node& lpif_node) {
     int nRet = 0;
     std::stringstream ss;
 
+    // todo path2str belong to reg
     ss << "======== " << path2str(args_fn_path.begin(), args_fn_path.end());
     if (!args_pass2fn.empty()) {
         ss << " -- " << ltz::str::join(args_pass2fn.begin(), args_pass2fn.end(), " ");
@@ -94,8 +162,7 @@ int run_op(ltz::proc_init::fn::node& lpif_node) {
     nRet = nd.lpif_main(args_pass2fn);
     ss << timer.end().toStr_pass_time();
 
-    std::cout << "======== "
-              << "return value: " << nRet << ", time cost: " << ss.str()  //
+    std::cout << "======== " << "return value: " << nRet << ", time cost: " << ss.str()  //
               << " ========" << std::endl;
     return nRet;
 }
@@ -151,7 +218,7 @@ int main(int argc, char* argv[]) {
     args_pass2fn = pr_parsed.second;
 
     if (vm["list"].as<bool>()) {
-        tcli::list(args_fn_path);
+        tcli::list_at(args_fn_path);
         return 0;
     }
     if (vm["list-all"].as<bool>()) {
@@ -180,7 +247,7 @@ int main(int argc, char* argv[]) {
     auto& reg = get_register();
     int r = reg.run(args_fn_path.begin(), args_fn_path.end(), run_op);
     if (!reg.ok()) {
-        list(args_fn_path);
+        list_at(args_fn_path);
         return -1;
     }
     return r;
@@ -207,10 +274,8 @@ TCLI_OPT_FN(tcli_opt) {
 
 }  // namespace tcli
 
-TCLI_FN_TCLI(toStr_registered_debug) {
-    namespace toflag = ltz::proc_init::regi::toStrRegFlag;
-    auto flag = toflag::default_flag | toflag::address;
-    std::cout << tcli::get_register().toStr_registered("root", flag) << std::endl;
+TCLI_FN_TCLI(list_all_nodes) {
+    tcli::list_all();
     return 0;
 }
 

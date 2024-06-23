@@ -3,6 +3,7 @@
 
 #include <boost/property_tree/ptree.hpp>
 #include "../string/string.hpp"
+#include <iostream>
 
 namespace ltz {
 namespace proc_init {
@@ -56,10 +57,15 @@ class reg {
 
     /* path type */
    public:
+    /*
+        @todo toStr()
+     */
     struct path_type {
+        // consider path: ////ab//c//d///
         path_type(const std::string &path, const std::string &path_sep = "/") : vec(str::split_if(path, path_sep, [](const std::string &s) { return !s.empty(); })) {}
         template <typename Str>
         path_type(Str path, Str path_sep = "/") : path_type(std::string(path), std::string(path_sep)) {}
+        path_type(const std::vector<std::string> &v) : vec(v) {}
 
         std::vector<std::string> vec;
 
@@ -68,9 +74,7 @@ class reg {
         }
     };
 
-   protected:
     using reg_tree = boost::property_tree::basic_ptree<std::string, T *>;
-    reg_tree rt_{nullptr};
     struct to_entry_translator {
         using internal_type = T *;
         using external_type = T *;
@@ -81,6 +85,9 @@ class reg {
             return t;
         }
     };
+
+   protected:
+    reg_tree rt_{nullptr};
 
    public:
     /* put */
@@ -149,8 +156,8 @@ class reg {
     /*
         @brief for each, in preoder traversal
         @param[in] fn prototype:
-            void fn(T &);
-            void fn(T &, const for_each_ctx &);
+            void fn(reg_tree &);
+            todo void fn(reg_tree&, const for_each_ctx &)
         @param[in] depth -1 means all depth, traversal on current node children will stop if depth == 0
      */
     template <typename Fn>
@@ -160,9 +167,9 @@ class reg {
     }
 
     template <typename Fn>
-    inline void for_each_at(Fn fn, const path_type &path, int depth = -1) {
+    inline void for_each_at(const path_type &path, Fn fn, int depth = -1) {
         auto pr = get_tree_node(path.vec.begin(), path.vec.end(), rt_);
-        if (pr.second == path.vec.end()) {
+        if (pr.second != path.vec.end()) {
             err = error::node_not_found;
             return;
         }
@@ -172,68 +179,16 @@ class reg {
     }
 
 
-    /*
-        @brief Get keys of children nodes, specified by path
-        @param path Path to register entry, require format like /a/b/c
-     */
-    inline std::vector<std::string> get_children_keys(const std::string &path) {
-        auto op = rt_.get_child_optional(typename reg_tree::path_type(path, '/'));
-        if (!op) {
-            err = error::node_not_found;
-            return {};
-        }
-        std::vector<std::string> v;
-        for (auto &key : *op) {
-            v.push_back(key.first);
-        }
-
-        err = error::ok;
-
-        return v;
-    }
-
     template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
     inline std::vector<std::string> get_children_keys(InputIt first, InputIt last) {
         std::string path = str::join(first, last, "/");
         return get_children_keys(path);
     }
 
-   public:
-    /*
-        @brief Get registered info
-        @details Get string of tree and its children, format like:
-            tree(this, entry addr)
-            |--child_key(child_this, sub entry addr)
-            |----key*(0x123456, 0xabcdef)
-            ...
-        @param details_flag Flag that indicate how many infomation to be show.
-     */
-    inline std::string toStr_registered(const std::string &tree_name = "tree", uint32_t details_flag = regi::toStrRegFlag::default_flag) {
-        T *entry = rt_.template get_value<T *>();
-        std::stringstream ss;
-        ss << tree_name;
-        if (entry && details_flag & regi::toStrRegFlag::mark_entity) {
-            ss << "*";
-        }
-        if (details_flag & regi::toStrRegFlag::address) {
-            ss << "(0x" << std::hex << (uint64_t)&rt_ << ", 0x" << (uint64_t)entry << ")";
-        }
-        ss << "\n";
-        toStr_registered_impl(ss, rt_, details_flag, 1);
-        std::string s = ss.str();
-        if (s.size()) {
-            s.pop_back();
-        }
-
-        err = error::ok;
-        return s;
-    }
-
     /* helper */
    private:
     template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
     inline void put_impl(InputIt first, InputIt last, T *entry, reg_tree &tree) {
-        // consider path: ////ab//c//d///
         while (first != last && *first == "") {
             first++;
         }
@@ -256,52 +211,31 @@ class reg {
         put_impl(++first, last, entry, *opt);
     }
 
-    inline void for_each_impl(std::function<void(T &)> fn, int depth, int max_depth, reg_tree &tree) {
+    inline void for_each_impl(std::function<void(reg_tree &)> fn, int depth, int max_depth, reg_tree &tree) {
         if (max_depth != -1 && depth == max_depth) {
             return;
         }
         for (auto &pr : tree) {
             reg_tree &tree_child = pr.second;
-            T *entry_child = tree_child.template get_value<T *>();
-            if (entry_child && fn) {
-                fn(*entry_child);
-            }
-            for_each_impl(fn, depth + 1, max_depth, tree_child);
-        }
-    }
-
-    inline void for_each_impl(std::function<void(T &, const for_each_ctx &)> fn, int depth, int max_depth, reg_tree &tree) {
-        if (max_depth != -1 && depth == max_depth) {
-            return;
-        }
-        for (auto &pr : tree) {
-            reg_tree &tree_child = pr.second;
-            T *entry_child = tree_child.template get_value<T *>();
             if (fn) {
-                const std::string key_child = pr.first;
-                for_each_ctx ctx{key_child, depth};
-                fn(*entry_child, ctx);
+                fn(tree_child);
             }
             for_each_impl(fn, depth + 1, max_depth, tree_child);
         }
     }
 
-    inline std::stringstream &toStr_registered_impl(std::stringstream &ss, reg_tree &tree, uint32_t details_flag = regi::toStrRegFlag::default_flag, int depth = 0) {
-        for (auto &pr : tree) {
-            const std::string key_child = pr.first;
-            reg_tree &tree_child = pr.second;
-            T *entry_child = tree_child.template get_value<T *>();
-            ss << std::string(depth * 2, ' ') << key_child;
-            if (entry_child && details_flag & regi::toStrRegFlag::mark_entity) {
-                ss << "*";
-            }
-            if (details_flag & regi::toStrRegFlag::address) {
-                ss << "(0x" << std::hex << (uint64_t)&tree_child << ", 0x" << (uint64_t)entry_child << ")";
-            }
-            ss << "\n";
-            toStr_registered_impl(ss, tree_child, details_flag, depth + 1);
+    inline void for_each_impl(std::function<void(reg_tree &, const for_each_ctx &)> fn, int depth, int max_depth, reg_tree &tree) {
+        if (max_depth != -1 && depth == max_depth) {
+            return;
         }
-        return ss;
+        for (auto &pr : tree) {
+            reg_tree &tree_child = pr.second;
+            if (fn) {
+                for_each_ctx ctx{pr.first, depth};
+                fn(tree_child, ctx);
+            }
+            for_each_impl(fn, depth + 1, max_depth, tree_child);
+        }
     }
 };
 }  // namespace proc_init

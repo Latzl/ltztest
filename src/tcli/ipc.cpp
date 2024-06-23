@@ -84,7 +84,7 @@ int listen() {
 
         reg.run(args_fn_path.begin(), args_fn_path.end(), run_op);
         if (!reg.ok()) {
-            list(args_fn_path);
+            list_at(args_fn_path);
         }
     }
 

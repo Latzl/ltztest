@@ -7,7 +7,7 @@ namespace tcli {
 
 int run_op(ltz::proc_init::fn::node& lpif_node);
 
-void list(const std::vector<std::string>& vArgsAsFnPath);
+void list_at(const std::vector<std::string>& vArgsAsFnPath);
 
 void list_all();
 
