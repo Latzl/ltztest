@@ -90,13 +90,13 @@ class fn_reg : public reg<fn::node> {
         @param last
         @param op Function to do something and call lpif_main and do something after call lpif_main.
         @return Return value of lpif_main if run successfully. Return -1 if
-            1. node not found, and set err to error::function_invalid
-            2. op is not callable, and set error to err::no_valid_function
+            1. node not found, and set err to error::function_invalid.
+            2. op is not callable, and set error to err::no_valid_function.
         @todo The first parameter in op is fn::node, it cause that code in definition of op have to dynamic_cast to custom node. Find way to suport custom node as parameter of op.
         @todo Error handle to fn_reg
      */
     template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
-    inline int run(InputIt first, InputIt last, std::function<int(ltz::proc_init::fn::node &)> op) {
+    inline int run(InputIt first, InputIt last, std::function<int(fn::node &)> op) {
         if (!op) {
             err = error::function_invalid;
             return -1;
@@ -118,7 +118,7 @@ class fn_reg : public reg<fn::node> {
 
     template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
     inline int run(InputIt first, InputIt last) {
-        return run(first, last, [&first, &last](ltz::proc_init::fn::node &node) -> int {
+        return run(first, last, [&first, &last](fn::node &node) -> int {
             int nRet = 0;
             node.lpif_init();
             nRet = node.lpif_main(std::vector<std::string>{first, last});
