@@ -55,10 +55,10 @@ void prompt(const std::vector<std::string>& vArgsAsFnPath) {
         return;
     }
     auto& node = *dynamic_cast<tcli::node*>(pNode);
-    if (node.desc.empty()) {
+    if (node.tcli_desc.empty()) {
         return;
     }
-    std::cout << node.desc << std::endl;
+    std::cout << node.tcli_desc << std::endl;
 }
 
 
