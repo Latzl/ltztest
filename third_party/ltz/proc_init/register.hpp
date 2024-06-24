@@ -69,6 +69,10 @@ class reg {
 
         std::vector<std::string> vec;
 
+        inline std::string toStr() const {
+            return str::join(vec.begin(), vec.end(), "/");
+        }
+
         bool empty() const {
             return vec.empty();
         }
