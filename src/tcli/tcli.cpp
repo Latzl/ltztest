@@ -75,6 +75,8 @@ std::string get_registered_node_all(list_flag_t flag) {
 
         ss << std::string((ctx.depth + 1) * 2, ' ') << ctx.node_name;
 
+        // todo: construction of extend info should be implemented in node
+        // ss << " " << pNode->get_info();
         if (flag && pNode) {
             ss << " {";
             std::string sTmp;
