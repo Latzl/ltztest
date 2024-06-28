@@ -3,12 +3,12 @@
 
 #include <boost/preprocessor.hpp>
 
-/* 
+/*
     @brief Enclose each parameter in variadic to string.
     @param ... Variadic to enclose
     @return Variadic enclosed
  */
-#define LTZ_PP_ENCLOSE_PARAMS(...) _LTZ_PP_VA_ENCLOSE_PARAMS_I(__VA_ARGS__)
+#define LTZ_PP_VA_ENCLOSE_PARAMS(...) _LTZ_PP_VA_ENCLOSE_PARAMS_I(__VA_ARGS__)
 
 
 /* definition */

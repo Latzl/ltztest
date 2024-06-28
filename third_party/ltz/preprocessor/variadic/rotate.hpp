@@ -3,18 +3,18 @@
 
 #include <boost/preprocessor.hpp>
 
-/* 
+/*
     @brief Rotate right n bits
-    @param n Number of bits to rotate, n must >= 0. 
+    @param n Number of bits to rotate, n must >= 0.
     @param ... Variadic to rotate
     @return Variadict rotated
  */
-#define LTZ_PP_ROR(n, ...) _LTZ_PP_VA_ROR_I(n, __VA_ARGS__)
+#define LTZ_PP_VA_ROR(n, ...) _LTZ_PP_VA_ROR_I(n, __VA_ARGS__)
 
-/* 
+/*
     @brief Rotate left n bits
  */
-#define LTZ_PP_ROL(n, ...) _LTZ_PP_VA_ROL_I(n, __VA_ARGS__)
+#define LTZ_PP_VA_ROL(n, ...) _LTZ_PP_VA_ROL_I(n, __VA_ARGS__)
 
 
 /* definition */

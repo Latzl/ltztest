@@ -3,15 +3,15 @@
 
 #include <boost/preprocessor.hpp>
 
-/* 
+/*
     @brief Concatenate each parameter with sep.
     @param sep Separator
     @param ... Variadic to concatenate
     @return Variadic concatenated
  */
-#define LTZ_PP_CAT_WITH_SEP(sep, ...) _LTZ_PP_VA_CAT_WITH_SEP_I(sep, __VA_ARGS__)
+#define LTZ_PP_VA_CAT_WITH_SEP(sep, ...) _LTZ_PP_VA_CAT_WITH_SEP_I(sep, __VA_ARGS__)
 
-#define LTZ_PP_CAT_WITH_UNDERLINE(...) LTZ_PP_CAT_WITH_SEP(_, __VA_ARGS__)
+#define LTZ_PP_VA_CAT_WITH_UNDERLINE(...) LTZ_PP_VA_CAT_WITH_SEP(_, __VA_ARGS__)
 
 
 /* definition */

@@ -204,7 +204,7 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 }  // namespace ltz
 
 #define _LTZ_PI_FN_PATH_SEP LPIFN
-#define _LTZ_PI_FN_CAT2PATH(...) LTZ_PP_CAT_WITH_SEP(_LTZ_PI_FN_PATH_SEP, __VA_ARGS__)
+#define _LTZ_PI_FN_CAT2PATH(...) LTZ_PP_VA_CAT_WITH_SEP(_LTZ_PI_FN_PATH_SEP, __VA_ARGS__)
 #define _LTZ_PI_FN_GET_ID(name, path) BOOST_PP_CAT(_lpifn_##name##_, path)
 #define _LTZ_PI_FN_GET_ID_VA(...) _LTZ_PI_FN_GET_ID(_LTZ_PI_FN_CAT2PATH(__VA_ARGS__))
 
@@ -244,7 +244,7 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 
 #define _LTZ_PI_FN_GET_NODE_I(name, ...)                                         \
     []() -> ::ltz::proc_init::fn::node * {                                       \
-        std::vector<std::string> vPath = {LTZ_PP_ENCLOSE_PARAMS(__VA_ARGS__)};   \
+        std::vector<std::string> vPath = {LTZ_PP_VA_ENCLOSE_PARAMS(__VA_ARGS__)};   \
         return _LTZ_PI_FN_GET_REG_I(name).get(vPath.begin(), vPath.end()).first; \
     }()
 

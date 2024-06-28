@@ -16,7 +16,7 @@ int test_with_filter(const std::string& suit = "", const std::string& test = "")
 
 #define _TCLI_FN_GTEST(...) TCLI_FN(gtest, __VA_ARGS__)
 
-#define _TCLI_GTEST_GEN_SUIT_NAME(suit, ...) LTZ_PP_CAT_WITH_UNDERLINE(__VA_ARGS__, _##suit)
+#define _TCLI_GTEST_GEN_SUIT_NAME(suit, ...) LTZ_PP_VA_CAT_WITH_UNDERLINE(__VA_ARGS__, _##suit)
 #define _TCLI_GTEST_II(suit, case, ...) TEST(_TCLI_GTEST_GEN_SUIT_NAME(suit, __VA_ARGS__), case)
 #define _TCLI_GTEST_VA_GET_SUIT(...) BOOST_PP_VARIADIC_ELEM(BOOST_PP_SUB(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), 2), __VA_ARGS__)
 #define _TCLI_GTEST_VA_GET_CASE(...) BOOST_PP_VARIADIC_ELEM(BOOST_PP_SUB(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), 1), __VA_ARGS__)
