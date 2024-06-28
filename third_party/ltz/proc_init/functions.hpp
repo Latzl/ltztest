@@ -244,7 +244,7 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 
 #define _LTZ_PI_FN_GET_NODE_I(name, ...)                                         \
     []() -> ::ltz::proc_init::fn::node * {                                       \
-        std::vector<std::string> vPath = {LTZ_PP_ENCLOSE_ELEMS(__VA_ARGS__)};    \
+        std::vector<std::string> vPath = {LTZ_PP_ENCLOSE_PARAMS(__VA_ARGS__)};   \
         return _LTZ_PI_FN_GET_REG_I(name).get(vPath.begin(), vPath.end()).first; \
     }()
 
