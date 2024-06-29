@@ -93,7 +93,7 @@ std::string get_registered_node_all(list_flag_t flag) {
     ss << "tcli\n";
     auto fn = [&ss, flag](lpir_reg::reg_tree& tree, const lpir_reg::for_each_ctx& ctx) {
         lpi::fn::node* lpif_node = tree.get_value<lpi::fn::node*>();
-        auto pNode = dynamic_cast<tcli::node*>(lpif_node);
+        auto pNode = dynamic_cast<basic_node*>(lpif_node);
 
         ss << std::string((ctx.depth + 1) * 2, ' ') << ctx.node_name;
 
@@ -147,7 +147,7 @@ std::string path2str(InputIt first, InputIt last) {
 }
 
 int run_op(ltz::proc_init::fn::node& lpif_node) {
-    auto& nd = dynamic_cast<node&>(lpif_node);
+    auto& nd = dynamic_cast<basic_node&>(lpif_node);
     int nRet = 0;
     std::stringstream ss;
 

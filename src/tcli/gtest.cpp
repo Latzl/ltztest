@@ -27,9 +27,6 @@ std::string node::get_info(){
     };
 
     append(toStr_char(t));
-    if(!tcli_desc.empty()){
-        append(tcli_desc);
-    }
 
     s += sInfo;
     s += "}";

@@ -14,10 +14,7 @@ extern int argc_raw;
 extern char** argv_raw;
 extern std::vector<std::string> args_pass2fn, args_fn_path;
 
-// todo define basic_node
-
-struct node : ltz::proc_init::fn::node {
-    std::string tcli_desc;
+struct basic_node : ltz::proc_init::fn::node {
     /*
         @brief Get infomation string
         @return Infomation string. Format should conform:
@@ -29,7 +26,12 @@ struct node : ltz::proc_init::fn::node {
                 d: info2
                 ...
      */
-    virtual std::string get_info();
+    virtual std::string get_info() {};
+};
+
+struct node : basic_node {
+    std::string tcli_desc;
+    std::string get_info() override;
 };
 
 int main(int argc, char* argv[]);

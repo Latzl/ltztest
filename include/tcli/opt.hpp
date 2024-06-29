@@ -1,12 +1,12 @@
 #ifndef TCLI_OPT_HPP
 #define TCLI_OPT_HPP
 
-#include <ltz/proc_init/proc_init.hpp>
+#include <tcli/tcli.hpp>
 
 namespace tcli {
 namespace opt {
 
-struct node : public ltz::proc_init::fn::node {};
+struct node : public basic_node {};
 
 ltz::proc_init::fn_reg &get_register();
 

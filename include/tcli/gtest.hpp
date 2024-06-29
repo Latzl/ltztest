@@ -2,14 +2,13 @@
 #define TCLI_GTEST_HPP
 
 #include <tcli/tcli.hpp>
-#include <tcli/opt.hpp>
 
 #include <gtest/gtest.h>
 
 namespace tcli {
 namespace gtest {
 
-struct node : public tcli::node {
+struct node : public tcli::basic_node {
     using gtest_t = uint32_t;
     struct type {
         static const gtest_t all = 1 << 0;
