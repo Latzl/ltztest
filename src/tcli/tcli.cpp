@@ -121,7 +121,7 @@ void list_all() {
 }
 
 
-void prompt(const std::vector<std::string>& vArgsAsFnPath) {
+void print_desc(const std::vector<std::string>& vArgsAsFnPath) {
     auto pr = get_register().get(vArgsAsFnPath.begin(), vArgsAsFnPath.end());
     auto lpif_node = pr.first;
     auto pNode = dynamic_cast<tcli::node*>(lpif_node);
@@ -228,8 +228,8 @@ int main(int argc, char* argv[]) {
         tcli::list_all();
         return 0;
     }
-    if (vm["prompt"].as<bool>()) {
-        tcli::prompt(args_fn_path);
+    if (vm["print-desc"].as<bool>()) {
+        tcli::print_desc(args_fn_path);
         return 0;
     }
 

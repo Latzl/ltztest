@@ -54,7 +54,7 @@ TCLI_OPT_FN(tcli) {
         ("list,t", boost::program_options::bool_switch(), "List sub path of current given path then exit.")  //
         ("list-all,T", boost::program_options::bool_switch(), "List all registered function tree then exit. Node with * indicate that a function has registered on this node. Therefore, the path to this node can be the path to excutable function.")  //
         ("fpath,f", boost::program_options::value<std::vector<std::string>>()->default_value(args_fn_path, "")->multitoken(), "Set function path to execute.")  //
-        ("prompt,p", boost::program_options::bool_switch(), "Print the corresponding description of the function. Only TCLI_DF() specified by function path was used will take effect.")("silence,s", boost::program_options::bool_switch(), "Silence mode.")  //
+        ("print-desc,p", boost::program_options::bool_switch(), "Print the corresponding description of the function. Only TCLI_DF() specified by function path was used will take effect.")("silence,s", boost::program_options::bool_switch(), "Silence mode.")  //
         ("verbose,v", boost::program_options::bool_switch(), "Verbose mode.")  //
         ("listen,l", boost::program_options::bool_switch(), "Listen other tcli process. As tcli server, wait for function path message from client then parse this path and execute.")  //
         ("connect,c", boost::program_options::bool_switch(), "Connect to tcli server. Send function path message to server.")  //

@@ -3,13 +3,13 @@
 namespace tcli {
 namespace gtest {
 
-std::string node::toStr_char(node::gtest_t t){
+std::string node::toStr_char(node::type_t t){
     switch(t){
-        case node::type::all:
+        case node::test_type::all:
             return "a";
-        case node::type::suit:
+        case node::test_type::suit:
             return "s";
-        case node::type::case_:
+        case node::test_type::case_:
             return "c";
         default:
             throw std::domain_error("unknown type: " + std::to_string(t));
@@ -26,7 +26,7 @@ std::string node::get_info(){
         sInfo += s;
     };
 
-    append(toStr_char(t));
+    append(toStr_char(type));
 
     s += sInfo;
     s += "}";

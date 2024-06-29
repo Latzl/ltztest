@@ -8,17 +8,16 @@
 namespace tcli {
 namespace gtest {
 
-struct node : public tcli::basic_node {
-    using gtest_t = uint32_t;
-    struct type {
-        static const gtest_t all = 1 << 0;
-        static const gtest_t suit = 1 << 1;
-        static const gtest_t case_ = 1 << 2;
+struct node : public basic_node {
+    using type_t = uint32_t;
+    struct test_type {
+        static const type_t all = 1;
+        static const type_t suit = 2;
+        static const type_t case_ = 3;
     };
-    // todo rename
-    gtest_t t{0};
+    type_t type{0};
 
-    std::string toStr_char(gtest_t t);
+    std::string toStr_char(type_t t);
 
     std::string get_info() override;
 };
@@ -70,30 +69,30 @@ int test_with_filter(const std::string& suit = "", const std::string& test = "")
 
 // call def
 #define _TCLI_GTEST_CALL_TYPE_ALL 0
-#define _TCLI_GTEST_CALL_TYPE_ALL_INST ::tcli::gtest::node::type::all
+#define _TCLI_GTEST_CALL_TYPE_ALL_INST ::tcli::gtest::node::test_type::all
 #define _TCLI_GTEST_CALL_TYPE_SUIT 1
-#define _TCLI_GTEST_CALL_TYPE_SUIT_INST ::tcli::gtest::node::type::suit
+#define _TCLI_GTEST_CALL_TYPE_SUIT_INST ::tcli::gtest::node::test_type::suit
 #define _TCLI_GTEST_CALL_TYPE_CASE 2
-#define _TCLI_GTEST_CALL_TYPE_CASE_INST ::tcli::gtest::node::type::case_
+#define _TCLI_GTEST_CALL_TYPE_CASE_INST ::tcli::gtest::node::test_type::case_
 
 // todo to readable assign t
-#define _TCLI_GTEST_CALL_DEF(type, ...)                                              \
-    LTZ_PI_FN_NODE_CONSTRUCT(tcli, ::tcli::gtest::node, gtest, __VA_ARGS__) {        \
-        t = BOOST_PP_IF(BOOST_PP_EQUAL(type, _TCLI_GTEST_CALL_TYPE_ALL), /*  */      \
-            _TCLI_GTEST_CALL_TYPE_ALL_INST, /*  */                                   \
-            BOOST_PP_IF(BOOST_PP_EQUAL(type, _TCLI_GTEST_CALL_TYPE_SUIT), /*  */     \
-                _TCLI_GTEST_CALL_TYPE_SUIT_INST, /*  */                              \
-                BOOST_PP_IF(BOOST_PP_EQUAL(type, _TCLI_GTEST_CALL_TYPE_CASE), /*  */ \
-                    _TCLI_GTEST_CALL_TYPE_CASE_INST, /*  */                          \
-                    BOOST_PP_EMPTY() /*  */                                          \
-                    )));                                                             \
-    }                                                                                \
-    LTZ_PI_FN_DEF_INIT(tcli, gtest, __VA_ARGS__) {}                                  \
-    LTZ_PI_FN_DEF_CLEAN(tcli, gtest, __VA_ARGS__) {}                                 \
+#define _TCLI_GTEST_CALL_DEF(_type, ...)                                              \
+    LTZ_PI_FN_NODE_CONSTRUCT(tcli, ::tcli::gtest::node, gtest, __VA_ARGS__) {         \
+        type = BOOST_PP_IF(BOOST_PP_EQUAL(_type, _TCLI_GTEST_CALL_TYPE_ALL), /*  */   \
+            _TCLI_GTEST_CALL_TYPE_ALL_INST, /*  */                                    \
+            BOOST_PP_IF(BOOST_PP_EQUAL(_type, _TCLI_GTEST_CALL_TYPE_SUIT), /*  */     \
+                _TCLI_GTEST_CALL_TYPE_SUIT_INST, /*  */                               \
+                BOOST_PP_IF(BOOST_PP_EQUAL(_type, _TCLI_GTEST_CALL_TYPE_CASE), /*  */ \
+                    _TCLI_GTEST_CALL_TYPE_CASE_INST, /*  */                           \
+                    BOOST_PP_EMPTY() /*  */                                           \
+                    )));                                                              \
+    }                                                                                 \
+    LTZ_PI_FN_DEF_INIT(tcli, gtest, __VA_ARGS__) {}                                   \
+    LTZ_PI_FN_DEF_CLEAN(tcli, gtest, __VA_ARGS__) {}                                  \
     LTZ_PI_FN_DEF_MAIN(tcli, gtest, __VA_ARGS__)
 
 // call all
-#define _TCLI_GTEST_CALL_ALL_I()                                         \
+#define _TCLI_GTEST_CALL_ALL_I()                                    \
     _TCLI_GTEST_CALL_DEF(_TCLI_GTEST_CALL_TYPE_ALL) {               \
         ::testing::InitGoogleTest(&tcli::argc_raw, tcli::argv_raw); \
         return RUN_ALL_TESTS();                                     \
@@ -102,14 +101,14 @@ int test_with_filter(const std::string& suit = "", const std::string& test = "")
 // call suit
 #define _TCLI_GTEST_SUIT_VA_GET_SUIT(...) BOOST_PP_VARIADIC_ELEM(BOOST_PP_SUB(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), 1), __VA_ARGS__)
 #define _TCLI_GTEST_SUIT_VA_GET_PATH(...) BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_FIRST_N(BOOST_PP_SUB(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), 1), BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
-#define _TCLI_GTEST_CALL_SUIT_II(suit, ...)                                                                           \
+#define _TCLI_GTEST_CALL_SUIT_II(suit, ...)                                                                      \
     _TCLI_GTEST_CALL_DEF(_TCLI_GTEST_CALL_TYPE_SUIT, __VA_ARGS__, suit) {                                        \
         return ::tcli::gtest::test_with_filter(BOOST_PP_STRINGIZE(_TCLI_GTEST_GEN_SUIT_NAME(suit, __VA_ARGS__))); \
     }
 #define _TCLI_GTEST_CALL_SUIT_I(...) _TCLI_GTEST_CALL_SUIT_II(_TCLI_GTEST_SUIT_VA_GET_SUIT(__VA_ARGS__), _TCLI_GTEST_SUIT_VA_GET_PATH(__VA_ARGS__))
 
 // call case
-#define _TCLI_GTEST_CALL_CASE_II(suit, case, ...)                                                                                               \
+#define _TCLI_GTEST_CALL_CASE_II(suit, case, ...)                                                                                          \
     _TCLI_GTEST_CALL_DEF(_TCLI_GTEST_CALL_TYPE_CASE, __VA_ARGS__, suit, case) {                                                            \
         return ::tcli::gtest::test_with_filter(BOOST_PP_STRINGIZE(_TCLI_GTEST_GEN_SUIT_NAME(suit, __VA_ARGS__)), BOOST_PP_STRINGIZE(case)); \
     }

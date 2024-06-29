@@ -11,7 +11,7 @@ void list_at(const std::vector<std::string>& vArgsAsFnPath);
 
 void list_all();
 
-void prompt(const std::vector<std::string>& vArgsAsFnPath);
+void print_desc(const std::vector<std::string>& vArgsAsFnPath);
 
 }
 

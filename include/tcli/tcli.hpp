@@ -14,7 +14,7 @@ extern int argc_raw;
 extern char** argv_raw;
 extern std::vector<std::string> args_pass2fn, args_fn_path;
 
-struct basic_node : ltz::proc_init::fn::node {
+struct basic_node : public ltz::proc_init::fn::node {
     /*
         @brief Get infomation string
         @return Infomation string. Format should conform:
@@ -29,7 +29,7 @@ struct basic_node : ltz::proc_init::fn::node {
     virtual std::string get_info() {};
 };
 
-struct node : basic_node {
+struct node : public basic_node {
     std::string tcli_desc;
     std::string get_info() override;
 };
