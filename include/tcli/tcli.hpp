@@ -16,6 +16,18 @@ extern std::vector<std::string> args_pass2fn, args_fn_path;
 
 struct node : ltz::proc_init::fn::node {
     std::string tcli_desc;
+    /*
+        @brief Get infomation string
+        @return Infomation string. Format should conform:
+            <a>{<b>[, <c>[, <d>...]]}
+            where
+                a: name to descipt this class
+                b: info
+                c: info1
+                d: info2
+                ...
+     */
+    virtual std::string get_info();
 };
 
 int main(int argc, char* argv[]);
@@ -29,10 +41,10 @@ ltz::proc_init::fn_reg& get_register();
     @brief Define function.
     @param ... Variable parameter, which specify the function path.
  */
-#define TCLI_FN(...)                                           \
-    LTZ_PI_FN_NODE_CONSTRUCT(tcli, ::tcli::node, __VA_ARGS__); \
-    LTZ_PI_FN_DEF_INIT(tcli, __VA_ARGS__) {}                   \
-    LTZ_PI_FN_DEF_CLEAN(tcli, __VA_ARGS__) {}                  \
+#define TCLI_FN(...)                                             \
+    LTZ_PI_FN_NODE_CONSTRUCT(tcli, ::tcli::node, __VA_ARGS__) {} \
+    LTZ_PI_FN_DEF_INIT(tcli, __VA_ARGS__) {}                     \
+    LTZ_PI_FN_DEF_CLEAN(tcli, __VA_ARGS__) {}                    \
     LTZ_PI_FN_DEF_MAIN(tcli, __VA_ARGS__)
 
 /*
@@ -40,14 +52,15 @@ ltz::proc_init::fn_reg& get_register();
     @param description Function description
     @param ... Variable parameter, which specify the function path.
  */
-#define TCLI_DF(description, ...)                              \
-    LTZ_PI_FN_NODE_CONSTRUCT(tcli, ::tcli::node, __VA_ARGS__); \
-    LTZ_PI_FN_NODE_HANDLE(tcli, set_desc, __VA_ARGS__) {       \
-        auto& node = dynamic_cast<::tcli::node&>(lpif_node);   \
-        node.tcli_desc = description;                          \
-    }                                                          \
-    LTZ_PI_FN_DEF_INIT(tcli, __VA_ARGS__) {}                   \
-    LTZ_PI_FN_DEF_CLEAN(tcli, __VA_ARGS__) {}                  \
+// todo move definition of tcli_desc to construct()
+#define TCLI_DF(description, ...)                                \
+    LTZ_PI_FN_NODE_CONSTRUCT(tcli, ::tcli::node, __VA_ARGS__) {} \
+    LTZ_PI_FN_NODE_HANDLE(tcli, set_desc, __VA_ARGS__) {         \
+        auto& node = dynamic_cast<::tcli::node&>(lpif_node);     \
+        node.tcli_desc = description;                            \
+    }                                                            \
+    LTZ_PI_FN_DEF_INIT(tcli, __VA_ARGS__) {}                     \
+    LTZ_PI_FN_DEF_CLEAN(tcli, __VA_ARGS__) {}                    \
     LTZ_PI_FN_DEF_MAIN(tcli, __VA_ARGS__)
 
 /*

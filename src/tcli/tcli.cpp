@@ -15,6 +15,28 @@ int argc_raw = 0;
 char** argv_raw = nullptr;
 std::vector<std::string> args_pass2fn, args_fn_path;
 
+std::string node::get_info() {
+    std::string s, sInfo;
+    s += "t{";
+
+    auto append = [&sInfo](const std::string& s) {
+        if (!sInfo.empty()) {
+            sInfo += ", ";
+        }
+        sInfo += s;
+    };
+
+    sInfo += "f";
+    if (!tcli_desc.empty()) {
+        append("d");
+    }
+
+    s += sInfo;
+    s += "}";
+
+    return s;
+}
+
 ltz::proc_init::fn_reg& get_register() {
     auto& reg = LTZ_PI_FN_GET_REG(tcli);
     return reg;
@@ -75,30 +97,9 @@ std::string get_registered_node_all(list_flag_t flag) {
 
         ss << std::string((ctx.depth + 1) * 2, ' ') << ctx.node_name;
 
-        // todo: construction of extend info should be implemented in node
-        // ss << " " << pNode->get_info();
-        if (flag && pNode) {
-            ss << " {";
-            std::string sTmp;
-            if (flag & list_flag::func) {
-                sTmp += "f, ";
-            }
-            if (flag & list_flag::desc && !pNode->tcli_desc.empty()) {
-                sTmp += "d, ";
-            }
-            if (flag & list_flag::addr) {
-                std::stringstream ss_tmp;
-                ss_tmp << "a[" << std::hex << (uint64_t)&lpif_node << "], ";
-                sTmp += ss_tmp.str();
-            }
-            if (!sTmp.empty()) {
-                sTmp.pop_back();
-                sTmp.pop_back();
-            }
-            ss << sTmp;
-            ss << "}";
+        if (pNode) {
+            ss << " " << pNode->get_info();
         }
-
         ss << "\n";
     };
 

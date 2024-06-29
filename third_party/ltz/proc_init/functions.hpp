@@ -8,13 +8,13 @@
         2. Define your macro to define function body. Here are two template
             2.1
                 #define MY_DEF(...)                                             \
-                    LTZ_PI_FN_NODE_CONSTRUCT(my_name, my_node, __VA_ARGS__);    \
+                    LTZ_PI_FN_NODE_CONSTRUCT(my_name, my_node, __VA_ARGS__){}    \
                     LTZ_PI_FN_DEF_INIT(my_name, __VA_ARGS__) {}                 \
                     LTZ_PI_FN_DEF_CLEAN(my_name, __VA_ARGS__) {}                \
                     LTZ_PI_FN_DEF_MAIN(my_name, __VA_ARGS__)
             2.2
                 #define MY_DEF_WITH_OP(op, ...)                                     \
-                    LTZ_PI_FN_NODE_CONSTRUCT(my_name, my_node, __VA_ARGS__);        \
+                    LTZ_PI_FN_NODE_CONSTRUCT(my_name, my_node, __VA_ARGS__){}        \
                     LTZ_PI_FN_NODE_HANDLE(my_name, my_handle_name, __VA_ARGS__) {   \
                         auto& node = dynamic_cast<my_node&>(lpif_node);             \
                         op(node);                                                   \
@@ -221,12 +221,16 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
     struct _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path)) : public type {                \
         _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path))() {                               \
             auto &reg = _LTZ_PI_FN_GET_REG_I(name);                                           \
+            construct();                                                                      \
             reg.put(BOOST_PP_STRINGIZE(path), this, BOOST_PP_STRINGIZE(_LTZ_PI_FN_PATH_SEP)); \
         }                                                                                     \
+        void construct();                                                                     \
         void lpif_init() override;                                                            \
         int lpif_main(const std::vector<std::string> &lpif_args) override;                    \
         void lpif_clean() override;                                                           \
-    } _LTZ_PI_FN_NODE_STRU_OBJ(_LTZ_PI_FN_GET_ID(name, path))
+    } _LTZ_PI_FN_NODE_STRU_OBJ(_LTZ_PI_FN_GET_ID(name, path));                                \
+    void _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path))::construct()
+
 
 #define _LTZ_PI_FN_NODE_HANDLE_I(name, handle_name, path)                                                                                                                   \
     void _LTZ_PI_FN_REG_HANDLE_FN(handle_name, _LTZ_PI_FN_GET_ID(name, path))(::ltz::proc_init::fn::node &);                                                                \
@@ -242,10 +246,10 @@ inline fn::node &get_node(const std::string &reg_name, const std::string &path, 
 #define _LTZ_PI_FN_DEF_INIT(name, path) void _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path))::lpif_init()
 #define _LTZ_PI_FN_DEF_CLEAN(name, path) void _LTZ_PI_FN_NODE_STRU(_LTZ_PI_FN_GET_ID(name, path))::lpif_clean()
 
-#define _LTZ_PI_FN_GET_NODE_I(name, ...)                                         \
-    []() -> ::ltz::proc_init::fn::node * {                                       \
-        std::vector<std::string> vPath = {LTZ_PP_VA_ENCLOSE_PARAMS(__VA_ARGS__)};   \
-        return _LTZ_PI_FN_GET_REG_I(name).get(vPath.begin(), vPath.end()).first; \
+#define _LTZ_PI_FN_GET_NODE_I(name, ...)                                          \
+    []() -> ::ltz::proc_init::fn::node * {                                        \
+        std::vector<std::string> vPath = {LTZ_PP_VA_ENCLOSE_PARAMS(__VA_ARGS__)}; \
+        return _LTZ_PI_FN_GET_REG_I(name).get(vPath.begin(), vPath.end()).first;  \
     }()
 
 #define _LTZ_PI_FN_RUN_I(lpif_args, name, ...)                     \
