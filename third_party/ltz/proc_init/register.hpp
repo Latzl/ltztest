@@ -161,7 +161,7 @@ class reg {
         @brief for each, in preoder traversal
         @param[in] fn prototype:
             void fn(reg_tree &);
-            todo void fn(reg_tree&, const for_each_ctx &)
+            void fn(reg_tree&, const for_each_ctx &)
         @param[in] depth -1 means all depth, traversal on current node children will stop if depth == 0
      */
     template <typename Fn>

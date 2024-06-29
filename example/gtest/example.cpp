@@ -94,5 +94,6 @@ TCLI_GTEST_DEF(other, b, d) {
 }
 TCLI_GTEST_CALL_CASE(other, b, d)
 
-TCLI_GTEST_CALL_SUITE(other)
-// TCLI_GTEST_CALL_SUITE(other, b)
+// TCLI_GTEST_CALL_SUITE(other)
+TCLI_GTEST_CALL_SUITE(other, a)
+TCLI_GTEST_CALL_SUITE(other, b)
