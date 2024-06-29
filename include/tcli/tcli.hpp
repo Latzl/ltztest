@@ -14,6 +14,8 @@ extern int argc_raw;
 extern char** argv_raw;
 extern std::vector<std::string> args_pass2fn, args_fn_path;
 
+// todo define basic_node
+
 struct node : ltz::proc_init::fn::node {
     std::string tcli_desc;
     /*

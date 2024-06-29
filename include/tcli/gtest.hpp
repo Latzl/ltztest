@@ -24,6 +24,8 @@ struct node : public tcli::node {
     std::string get_info() override;
 };
 
+// todo make a class for variadic to filter
+
 int test_with_filter(const std::string& suit = "", const std::string& test = "");
 
 }  // namespace gtest
