@@ -27,33 +27,21 @@ struct node : public basic_node {
 /*
     @brief Define a test case.
     @param ... Variadic that specify case path. Last two params indicate suit name and case name, while remaider combine to path.
+    @note For test defined case, specify path to case when tcli.
+        For test suit, specify path to suit when tcli.
+        For test suit recursively, specify path not point to suit node.
+        All path should start with 'gtest' as first node.
+        For example:
+            TCLI_GTEST_DEF(a, b, c)
+            TCLI_GTEST_DEF(a, b, d)
+            TCLI_GTEST_DEF(a, e, f)
+            TCLI_GTEST_DEF(g, h)
+            `tcli gtest` will test all four case.
+            `tcli gtest a b c` will test case c
+            `tcli gtest a b` will test suit a.
+            `tcli gtest a` will test case under a.
  */
 #define TCLI_GTEST_DEF(...) _TCLI_GTEST_DEF_I(__VA_ARGS__)
-
-// call
-/*
-    @brief Start test all case. It's suppose to call at global scope if testing all case is considered.
- */
-#define TCLI_GTEST_CALL_ALL() _TCLI_GTEST_CALL_ALL_I()
-
-/*
-    @brief Start test suit specified by variadic like (path, suit)
-    @param ... Variadic that specify suit path. Last param indicate suit name, while remaider combine to path.
- */
-#define TCLI_GTEST_CALL_SUITE(...) _TCLI_GTEST_CALL_SUIT_I(__VA_ARGS__)
-
-/*
-    @brief Start test case specified by variadic like (path, suit, case)
-    @param ... Variadic that specify case path. Last two params indicate suit name and case name, while remaider combine to path.
- */
-#define TCLI_GTEST_CALL_CASE(...) _TCLI_GTEST_CALL_CASE_I(__VA_ARGS__)
-
-/*
-    @brief Start test suits under specify path
-    @param ... Variadic that specify node path, suits under this node will start test.
- */
-#define TCLI_GTEST_CALL_SUBS(...) _TCLI_GTEST_CALL_SUBS_I(__VA_ARGS__)
-
 
 /* definition */
 // common
@@ -70,7 +58,7 @@ struct node : public basic_node {
 // test define
 #define _TCLI_GTEST_DEF_II(suit, case, ...)                                               \
     LTZ_PI_FN_NODE_CONSTRUCT(tcli, ::tcli::gtest::node, gtest, __VA_ARGS__, suit, case) { \
-        type = _TCLI_GTEST_CALL_TYPE_CASE_INST;                                                \
+        type = _TCLI_GTEST_CALL_TYPE_CASE_INST;                                           \
     }                                                                                     \
     LTZ_PI_FN_DEF_INIT(tcli, gtest, __VA_ARGS__, suit, case) {}                           \
     LTZ_PI_FN_DEF_CLEAN(tcli, gtest, __VA_ARGS__, suit, case) {}                          \
