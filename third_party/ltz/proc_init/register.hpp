@@ -8,13 +8,14 @@
 namespace ltz {
 namespace proc_init {
 
-namespace regi {
-namespace toStrRegFlag {
-const uint32_t mark_entity{1 << 0};
-const uint32_t address{1 << 1};
-const uint32_t default_flag{mark_entity};
-}  // namespace toStrRegFlag
-}  // namespace regi
+// todo no need any more
+// namespace regi {
+// namespace toStrRegFlag {
+// const uint32_t mark_entity{1 << 0};
+// const uint32_t address{1 << 1};
+// const uint32_t default_flag{mark_entity};
+// }  // namespace toStrRegFlag
+// }  // namespace regi
 
 template <typename T>
 class reg {
@@ -114,7 +115,7 @@ class reg {
     }
 
     /* get */
-   protected:
+    public:
     template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
     inline std::pair<reg_tree &, InputIt> get_tree_node(InputIt first, InputIt last, reg_tree &tree) {
         while (first != last && *first == "") {
@@ -132,7 +133,11 @@ class reg {
         return get_tree_node(++first, last, *opt);
     }
 
-   public:
+    template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
+    inline std::pair<reg_tree &, InputIt> get_tree_node(InputIt first, InputIt last) {
+        return get_tree_node(first, last, rt_);
+    }
+
     /*
         @return A pair of T * and it, it is point to the position pass the found node path
     */
@@ -182,12 +187,12 @@ class reg {
         err = error::ok;
     }
 
-
-    template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
-    inline std::vector<std::string> get_children_keys(InputIt first, InputIt last) {
-        std::string path = str::join(first, last, "/");
-        return get_children_keys(path);
-    }
+    // todo no need any more
+    // template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
+    // inline std::vector<std::string> get_children_keys(InputIt first, InputIt last) {
+    //     std::string path = str::join(first, last, "/");
+    //     return get_children_keys(path);
+    // }
 
     /* helper */
    private:
