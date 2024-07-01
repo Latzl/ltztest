@@ -1,5 +1,6 @@
 #include "tcli.hpp"
 #include "opt.hpp"
+#include "gtest.hpp"
 #include "ipc.hpp"
 #include "log.hpp"
 #include "utility.hpp"
@@ -44,7 +45,7 @@ ltz::proc_init::fn_reg& get_register() {
 
 const std::string LIST_HEADER = "Candidate nodes:";
 
-std::vector<std::string> get_registered_node_at(const std::vector<std::string>& vArgsAsFnPath) {
+std::vector<std::string> get_registered_nodes_at(const std::vector<std::string>& vArgsAsFnPath) {
     namespace lpi = ltz::proc_init;
     using lpir_reg = lpi::fn_reg::reg_p;
     std::vector<std::string> vNodes;
@@ -59,10 +60,9 @@ std::vector<std::string> get_registered_node_at(const std::vector<std::string>& 
     return vNodes;
 }
 
-void list_at(const std::vector<std::string>& vArgsAsFnPath) {
-    std::vector<std::string> v = get_registered_node_at(vArgsAsFnPath);
+std::string toStr_candidate_nodes(const std::vector<std::string>& vCandidate) {
     std::string sOutput;
-    for (auto& s : v) {
+    for (auto& s : vCandidate) {
         sOutput += s + "\t";
     }
     if (!sOutput.empty()) {
@@ -70,11 +70,17 @@ void list_at(const std::vector<std::string>& vArgsAsFnPath) {
     }
     if (!args_pass2fn.empty()) {
         std::cout << "With path: ";
-        std::copy(vArgsAsFnPath.begin(), vArgsAsFnPath.end(), std::ostream_iterator<std::string>(std::cout, "/"));
+        std::copy(args_fn_path.begin(), args_fn_path.end(), std::ostream_iterator<std::string>(std::cout, "/"));
         std::cout << ", " << LIST_HEADER << "\n";
     } else {
         std::cout << LIST_HEADER << "\n";
     }
+    return sOutput;
+}
+
+void list_at(const std::vector<std::string>& vArgsAsFnPath) {
+    std::vector<std::string> v = get_registered_nodes_at(vArgsAsFnPath);
+    std::string sOutput = toStr_candidate_nodes(v);
     std::cout << sOutput << std::endl;
 }
 
@@ -245,6 +251,11 @@ int main(int argc, char* argv[]) {
         std::cout << "registered fuction tree: " << std::endl;
         tcli::list_all();
         return 0;
+    }
+
+    // todo abstract as plugin
+    if (gtest::is_need_take_over()) {
+        return gtest::main();
     }
 
     auto& reg = get_register();

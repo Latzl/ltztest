@@ -38,11 +38,11 @@ inline std::vector<std::string> split(const std::string &src, const std::string 
     return split_if(src, delimiter, [](const std::string &) { return true; });
 }
 
-template <typename InputIt, typename UnaryOp>
-inline std::string join(InputIt first, InputIt last, const std::string &delimiter, UnaryOp uop) {
+template <typename InputIt, typename TransFn>
+inline std::string join(InputIt first, InputIt last, const std::string &delimiter, TransFn trans) {
     std::string s;
     for (InputIt it = first; it != last; it = std::next(it)) {
-        s += uop(it) + delimiter;
+        s += trans(*it) + delimiter;
     }
     if (first != last && s.size()) {
         s.erase(s.size() - delimiter.size());
@@ -52,7 +52,7 @@ inline std::string join(InputIt first, InputIt last, const std::string &delimite
 
 template <typename InputIt>
 inline std::string join(InputIt first, InputIt last, const std::string &delimiter) {
-    return join(first, last, delimiter, [](InputIt it) { return *it; });
+    return join(first, last, delimiter, [](const typename std::iterator_traits<InputIt>::value_type &t) { return t; });
 }
 
 }  // namespace str

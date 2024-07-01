@@ -24,7 +24,7 @@ bool lor(bool a, bool b) {
 }  // namespace logic
 }  // namespace test
 
-TCLI_GTEST_CALL_ALL()
+// TCLI_GTEST_CALL_ALL()
 
 TCLI_GTEST_DEF(test, arithmetic, add) {
     EXPECT_EQ(test::arithmetic::add(1, 2), 3);
@@ -35,7 +35,7 @@ TCLI_GTEST_DEF(test, arithmetic, add) {
     EXPECT_EQ(test::arithmetic::add(INT32_MAX, INT32_MIN), -1);
     EXPECT_EQ(test::arithmetic::add(INT32_MAX, INT32_MAX), -2);
 }
-TCLI_GTEST_CALL_CASE(test, arithmetic, add)
+// TCLI_GTEST_CALL_CASE(test, arithmetic, add)
 
 TCLI_GTEST_DEF(test, arithmetic, sub) {
     EXPECT_EQ(test::arithmetic::sub(1, 2), -1);
@@ -46,9 +46,9 @@ TCLI_GTEST_DEF(test, arithmetic, sub) {
     EXPECT_EQ(test::arithmetic::sub(INT32_MAX, INT32_MIN), -1);
     EXPECT_EQ(test::arithmetic::sub(INT32_MAX, INT32_MAX), 0);
 }
-TCLI_GTEST_CALL_CASE(test, arithmetic, sub)
+// TCLI_GTEST_CALL_CASE(test, arithmetic, sub)
 
-TCLI_GTEST_CALL_SUITE(test, arithmetic)
+// TCLI_GTEST_CALL_SUITE(test, arithmetic)
 
 TCLI_GTEST_DEF(test, logic, land) {
     EXPECT_EQ(test::logic::land(false, false), false);
@@ -56,7 +56,7 @@ TCLI_GTEST_DEF(test, logic, land) {
     EXPECT_EQ(test::logic::land(true, false), false);
     EXPECT_EQ(test::logic::land(true, true), true);
 }
-TCLI_GTEST_CALL_CASE(test, logic, land)
+// TCLI_GTEST_CALL_CASE(test, logic, land)
 
 TCLI_GTEST_DEF(test, logic, lor) {
     EXPECT_EQ(test::logic::lor(false, false), false);
@@ -64,36 +64,36 @@ TCLI_GTEST_DEF(test, logic, lor) {
     EXPECT_EQ(test::logic::lor(true, false), true);
     EXPECT_EQ(test::logic::lor(true, true), true);
 }
-TCLI_GTEST_CALL_CASE(test, logic, lor)
+// TCLI_GTEST_CALL_CASE(test, logic, lor)
 
-TCLI_GTEST_CALL_SUITE(test, logic)
+// TCLI_GTEST_CALL_SUITE(test, logic)
 
 TCLI_GTEST_DEF(other, a, b) {
     std::cout << "other/a/b" << std::endl;
 }
-TCLI_GTEST_CALL_CASE(other, a, b)
+// TCLI_GTEST_CALL_CASE(other, a, b)
 
 TCLI_GTEST_DEF(other, a, c) {
     std::cout << "other/a/c" << std::endl;
 }
 
-TCLI_GTEST_CALL_CASE(other, a, c)
+// TCLI_GTEST_CALL_CASE(other, a, c)
 
 TCLI_GTEST_DEF(other, b, a) {
     std::cout << "other/b/a" << std::endl;
 }
-TCLI_GTEST_CALL_CASE(other, b, a)
+// TCLI_GTEST_CALL_CASE(other, b, a)
 
 TCLI_GTEST_DEF(other, b, c) {
     std::cout << "other/b/c" << std::endl;
 }
-TCLI_GTEST_CALL_CASE(other, b, c)
+// TCLI_GTEST_CALL_CASE(other, b, c)
 
 TCLI_GTEST_DEF(other, b, d) {
     std::cout << "other/b/d" << std::endl;
 }
-TCLI_GTEST_CALL_CASE(other, b, d)
+// TCLI_GTEST_CALL_CASE(other, b, d)
 
-// TCLI_GTEST_CALL_SUITE(other)
-TCLI_GTEST_CALL_SUITE(other, a)
-TCLI_GTEST_CALL_SUITE(other, b)
+// TCLI_GTEST_CALL_SUBS(other)
+// TCLI_GTEST_CALL_SUITE(other, a)
+// TCLI_GTEST_CALL_SUITE(other, b)
