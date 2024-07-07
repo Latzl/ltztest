@@ -24,9 +24,11 @@ $(OBJ_DIR)/%.o: ./%.cpp $(HEADERS)
 
 PATH2TCLILIB = $(TCLI_MKDIR)/src/tcli/build/bin/libtcli.a
 
-$(TARGET): $(OBJS) $(PATH2TCLILIB)
+$(TARGET): $(OBJS)
 	@mkdir -p $(TARGET_DIR)
 	$(CXX) $(FLAGS) -o $@ $^ $(LIBS)
+
+$(OBJS): $(PATH2TCLILIB)
 
 .PHONY: all clean test
 
