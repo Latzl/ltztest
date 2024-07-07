@@ -8,15 +8,19 @@
         2. Define your macro to define function body. Here are two template
             2.1
                 #define MY_DEF(...)                                             \
-                    LTZ_PI_FN_NODE_CONSTRUCT(my_name, my_node, __VA_ARGS__){}    \
-                    LTZ_PI_FN_DEF_INIT(my_name, __VA_ARGS__) {}                 \
-                    LTZ_PI_FN_DEF_CLEAN(my_name, __VA_ARGS__) {}                \
+                    LTZ_PI_FN_NODE_CONSTRUCT(my_name, my_node, __VA_ARGS__){    \
+                        // customize node constructor                           \
+                    }                                                           \
+                    LTZ_PI_FN_DEF_INIT(my_name, __VA_ARGS__) {                  \
+                        // init function before lpif_main call                  \
+                    }                                                           \
+                    LTZ_PI_FN_DEF_CLEAN(my_name, __VA_ARGS__) {                 \
+                        // clean funciton after lpif_main called                \
+                    }                                                           \
                     LTZ_PI_FN_DEF_MAIN(my_name, __VA_ARGS__)
             2.2
                 #define MY_DEF_WITH_OP(op, ...)                                     \
-                    LTZ_PI_FN_NODE_CONSTRUCT(my_name, my_node, __VA_ARGS__){
-                        // todo 
-                    }        \
+                    LTZ_PI_FN_NODE_CONSTRUCT(my_name, my_node, __VA_ARGS__){}       \
                     LTZ_PI_FN_NODE_HANDLE(my_name, my_handle_name, __VA_ARGS__) {   \
                         auto& node = dynamic_cast<my_node&>(lpif_node);             \
                         op(node);                                                   \
@@ -95,7 +99,7 @@ class fn_reg : public reg<fn::node> {
             1. node not found, and set err to error::function_invalid.
             2. op is not callable, and set error to err::no_valid_function.
         @todo The first parameter in op is fn::node, it cause that code in definition of op have to dynamic_cast to custom node. Find way to suport custom node as parameter of op.
-        @todo? Error handle to fn_reg
+        @todo? Error handle for fn_reg
      */
     template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
     inline int run(InputIt first, InputIt last, std::function<int(fn::node &)> op) {

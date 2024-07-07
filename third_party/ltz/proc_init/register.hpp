@@ -8,15 +8,6 @@
 namespace ltz {
 namespace proc_init {
 
-// todo no need any more
-// namespace regi {
-// namespace toStrRegFlag {
-// const uint32_t mark_entity{1 << 0};
-// const uint32_t address{1 << 1};
-// const uint32_t default_flag{mark_entity};
-// }  // namespace toStrRegFlag
-// }  // namespace regi
-
 template <typename T>
 class reg {
    public:
@@ -186,13 +177,6 @@ class reg {
         for_each_impl(fn, 0, depth, tree_node);
         err = error::ok;
     }
-
-    // todo no need any more
-    // template <typename InputIt, typename std::enable_if<std::is_same<typename std::iterator_traits<InputIt>::value_type, std::string>::value>::type * = nullptr>
-    // inline std::vector<std::string> get_children_keys(InputIt first, InputIt last) {
-    //     std::string path = str::join(first, last, "/");
-    //     return get_children_keys(path);
-    // }
 
     /* helper */
    private:
