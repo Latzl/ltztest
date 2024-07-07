@@ -254,6 +254,7 @@ int main(int argc, char* argv[]) {
     }
 
     // todo abstract as plugin
+    // todo tcli server won't took over by gtest, fix this in future
     if (gtest::is_need_take_over()) {
         return gtest::main();
     }

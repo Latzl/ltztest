@@ -23,7 +23,7 @@ struct node : public basic_node {
 }  // namespace gtest
 }  // namespace tcli
 
-// define
+// declare
 /*
     @brief Define a test case.
     @param ... Variadic that specify case path. Last two params indicate suit name and case name, while remaider combine to path.
