@@ -46,6 +46,10 @@ std::string Opt::help() {
     return ss.str();
 }
 
+void add_description(const boost::program_options::options_description& desc){
+    opt.add_description(desc);
+}
+
 /* define options of tcli */
 TCLI_OPT_FN(tcli) {
     boost::program_options::options_description desc{"tcli_opt"};

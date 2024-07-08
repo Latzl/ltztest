@@ -2,6 +2,7 @@
 #define TCLI_OPT_HPP
 
 #include <tcli/tcli.hpp>
+#include <boost/program_options.hpp>
 
 namespace tcli {
 namespace opt {
@@ -9,6 +10,8 @@ namespace opt {
 struct node : public basic_node {};
 
 ltz::proc_init::fn_reg &get_register();
+
+void add_description(const boost::program_options::options_description& desc);
 
 }  // namespace opt
 }  // namespace tcli
