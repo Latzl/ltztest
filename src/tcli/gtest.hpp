@@ -17,6 +17,7 @@ enum class test_type {
     suit,
     case_,
     subs,
+    mix, // suit and subs and same prefix of suit name
 };
 
 std::string toStr(test_type type);
@@ -29,9 +30,10 @@ class Filter {
     bool trans2case();
     bool trans2suit();
     bool trans2subs();
+    bool trans2mix();
 
    public:
-    Filter(const std::vector<std::string> &path);
+    Filter(const std::vector<std::string> &path, const std::vector<std::string>& args);
 
     bool ready() const;
     std::string get_filter() const;

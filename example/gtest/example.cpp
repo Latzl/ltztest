@@ -1,6 +1,14 @@
 #include <tcli/gtest.hpp>
 
 namespace test {
+
+int return1() {
+    return 1;
+}
+int return2() {
+    return 2;
+}
+
 namespace arithmetic {
 
 int add(int a, int b) {
@@ -23,6 +31,14 @@ bool lor(bool a, bool b) {
 }
 }  // namespace logic
 }  // namespace test
+
+TCLI_GTEST_DEF(test, return1) {
+    EXPECT_EQ(test::return1(), 1);
+}
+
+TCLI_GTEST_DEF(test, return2) {
+    EXPECT_EQ(test::return2(), 2);
+}
 
 TCLI_GTEST_DEF(test, arithmetic, add) {
     EXPECT_EQ(test::arithmetic::add(1, 2), 3);

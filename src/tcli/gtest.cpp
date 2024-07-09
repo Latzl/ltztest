@@ -52,6 +52,8 @@ std::string toStr(test_type type) {
             return "case";
         case test_type::subs:
             return "subs";
+        case test_type::mix:
+            return "mix";
         case test_type::unknown:
         default:
             return "unknown";
@@ -59,13 +61,13 @@ std::string toStr(test_type type) {
 }
 
 
-Filter::Filter(const std::vector<std::string>& path) : nodePath(path) {
-    // gtest [...] <suit> <case>
+Filter::Filter(const std::vector<std::string>& path, const std::vector<std::string>& args) : nodePath(path) {
+    // gtest [...] <suit> <case> [*|**]
     if (nodePath.empty() || nodePath.front() != "gtest") {
         return;
     }
 
-    itRoot_ = nodePath.begin() + 1;
+    itRoot_ = nodePath.begin();
     itSuit_ = nodePath.end();
     itCase_ = nodePath.end();
 
@@ -84,22 +86,47 @@ Filter::Filter(const std::vector<std::string>& path) : nodePath(path) {
         return;
     }
 
-    // case
-    if (trans2case()) {
-        bReady_ = true;
-        return;
-    }
 
-    // suit
-    if (trans2suit()) {
-        bReady_ = true;
-        return;
-    }
+    /* if last node of path is:
+            1. a normal name, if
+                1.1 last named node has exist node value, to case
+                1.2 last named node has direct test case, to suit
+                1.3 last named node has no direct test case, to subs
+                or
+            2. '*', to subs, or
+            3. '**', to suit (if exist) and subs and every subs that path match the suit prefix
+        In 2 and 3 is for last named node is on path to subs but match suit name
+     */
+    if (!args.empty()) {
+        if (args.front() == ".") {
+            if (trans2subs()) {
+                bReady_ = true;
+                return;
+            }
+        } else if (args.back() == "..") {
+            if (trans2mix()) {
+                bReady_ = true;
+                return;
+            }
+        }
+    } else {
+        // case
+        if (trans2case()) {
+            bReady_ = true;
+            return;
+        }
 
-    // subs
-    if (trans2subs()) {
-        bReady_ = true;
-        return;
+        // suit
+        if (trans2suit()) {
+            bReady_ = true;
+            return;
+        }
+
+        // subs
+        if (trans2subs()) {
+            bReady_ = true;
+            return;
+        }
     }
 }
 
@@ -137,7 +164,7 @@ bool Filter::trans2case() {
 
     itSuit_ = nodePath.end() - 2;
     itCase_ = nodePath.end() - 1;
-    std::string suit_name = ltz::str::join(itRoot_, itSuit_, "_") + "__" + *(itSuit_);
+    std::string suit_name = ltz::str::join(itRoot_, itSuit_, "_") + "_" + *(itSuit_);
     std::string case_name = *itCase_;
     filter_ = suit_name + "." + case_name;
 
@@ -158,14 +185,14 @@ bool Filter::trans2suit() {
     type_ = test_type::suit;
 
     itSuit_ = nodePath.end() - 1;
-    std::string suit_name = ltz::str::join(itRoot_, itSuit_, "_") + "__" + *itSuit_;
+    std::string suit_name = ltz::str::join(itRoot_, itSuit_, "_") + "_" + *itSuit_;
     std::string case_name = "*";
     filter_ = suit_name + "." + case_name;
 
     return true;
 }
 bool Filter::trans2subs() {
-    if (pRegTree_->empty()) {
+    if (pRegTree_->empty()) {  // no children
         return false;
     }
 
@@ -177,9 +204,18 @@ bool Filter::trans2subs() {
 
     return true;
 }
+bool Filter::trans2mix() {
+    type_ = test_type::mix;
+
+    std::string suit_name = ltz::str::join(itRoot_, itSuit_, "_") + "*";
+    std::string case_name = "*";
+    filter_ = suit_name + "." + case_name;
+
+    return true;
+}
 
 int main() {
-    Filter filter(args_fn_path);
+    Filter filter(args_fn_path, args_pass2fn);
 
     if (!filter.ready()) {
         list_at(args_fn_path);
@@ -195,6 +231,7 @@ int main() {
         case test_type::suit:
         case test_type::case_:
         case test_type::subs:
+        case test_type::mix:
             return test_with_filter(filter.get_filter());
         case test_type::unknown:
         default:
