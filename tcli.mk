@@ -17,6 +17,12 @@ define GET_OBJS
 $(patsubst %.cpp, $(OBJ_DIR)/$(2)/%.o,$(notdir $(wildcard $(1)/*.cpp)))
 endef
 
+# gtest
+$(OBJ_DIR)/gtest/%.o: ./gtest/%.cpp $(HEADERS)
+	@mkdir -p $(OBJ_DIR)/gtest
+	$(CXX) $(FLAGS) -c $< -o $@
+
+# .
 OBJS += $(call GET_OBJS,./,.)
 $(OBJ_DIR)/%.o: ./%.cpp $(HEADERS)
 	@mkdir -p $(OBJ_DIR)
