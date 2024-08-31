@@ -26,7 +26,9 @@ struct basic_node : public ltz::proc_init::fn::node {
                 d: info2
                 ...
      */
-    virtual std::string get_info() {};
+    virtual std::string get_info() {
+        return "";
+    };
 };
 
 struct node : public basic_node {

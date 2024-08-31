@@ -62,7 +62,7 @@ std::string toStr(test_type type) {
 
 
 Filter::Filter(const std::vector<std::string>& path, const std::vector<std::string>& args) : nodePath(path) {
-    // gtest [...] <suit> <case> [*|**]
+    // gtest [...] <suit> <case> [.|..|...]
     if (nodePath.empty() || nodePath.front() != "gtest") {
         return;
     }
@@ -86,46 +86,53 @@ Filter::Filter(const std::vector<std::string>& path, const std::vector<std::stri
         return;
     }
 
+    node_type_ = parse_node_type();
 
-    /* if last node of path is:
-            1. a normal name, if
-                1.1 last named node has exist node value, to case
-                1.2 last named node has direct test case, to suit
-                1.3 last named node has no direct test case, to subs
-                or
-            2. '*', to subs, or
-            3. '**', to suit (if exist) and subs and every subs that path match the suit prefix
-        In 2 and 3 is for last named node is on path to subs but match suit name
-     */
+
     if (!args.empty()) {
-        if (args.front() == ".") {
+        std::string s = args.front();
+        if (s == ".") {
+            if (trans2case()) {
+                bReady_ = true;
+                return;
+            }
+        } else if (s == "..") {
+            if (trans2suit()) {
+                bReady_ = true;
+                return;
+            }
+        } else if (s == ",") {
             if (trans2subs()) {
                 bReady_ = true;
                 return;
             }
-        } else if (args.back() == "..") {
+        } else if (s == ",,") {
             if (trans2mix()) {
                 bReady_ = true;
                 return;
             }
         }
     } else {
-        // case
-        if (trans2case()) {
-            bReady_ = true;
-            return;
-        }
-
-        // suit
-        if (trans2suit()) {
-            bReady_ = true;
-            return;
-        }
-
-        // subs
-        if (trans2subs()) {
-            bReady_ = true;
-            return;
+        switch (node_type_) {
+            case test_type::all:
+                bReady_ = trans2all();
+                return;
+            case test_type::case_:
+                bReady_ = trans2case();
+                return;
+            case test_type::suit:
+                bReady_ = trans2suit();
+                return;
+            case test_type::subs:
+                bReady_ = trans2subs();
+                return;
+            case test_type::mix:
+                bReady_ = trans2mix();
+                return;
+            case test_type::unknown:
+            default:
+                bReady_ = false;
+                break;
         }
     }
 }
@@ -142,6 +149,58 @@ test_type Filter::get_type() const {
     return type_;
 }
 
+test_type Filter::get_node_type() const {
+    return node_type_;
+}
+
+test_type Filter::parse_node_type() {
+    if (nodePath.size() == 0) {
+        return test_type::unknown;
+    }
+    if (nodePath.size() == 1 && nodePath.front() == "gtest") {
+        return test_type::all;
+    }
+
+    int sub_nodes_cnt, sub_nodes_with_val_cnt, sub_nodes_with_child_cnt;
+    sub_nodes_cnt = sub_nodes_with_val_cnt = sub_nodes_with_child_cnt = 0;
+    for (auto& pr : *pRegTree_) {
+        sub_nodes_cnt++;
+        auto &tr = pr.second;
+        if (tr.get_value<lpif::node*>(lpif_reg::reg_p::to_entry_translator())) {
+            sub_nodes_with_val_cnt++;
+        }
+        if(!tr.empty()){
+            sub_nodes_with_child_cnt++;
+        }
+    }
+
+    if (sub_nodes_cnt == 0) {
+        if (pRegTree_->get_value<lpif::node*>(lpif_reg::reg_p::to_entry_translator())) {
+            return test_type::case_;
+        } else {
+            return test_type::unknown;
+        }
+    }
+
+    if (sub_nodes_with_val_cnt == 0) {
+        return test_type::subs;
+    }
+
+    if (sub_nodes_with_val_cnt == sub_nodes_cnt) {
+        if(sub_nodes_with_child_cnt == 0){
+            return test_type::suit;
+        }else{
+            return test_type::mix;
+        }
+    }
+
+    if (sub_nodes_with_val_cnt < sub_nodes_cnt) {
+        return test_type::mix;
+    }
+
+    return test_type::unknown;
+}
+
 bool Filter::trans2all() {
     if (nodePath.size() != 1) {
         return false;
@@ -154,12 +213,6 @@ bool Filter::trans2all() {
     return true;
 }
 bool Filter::trans2case() {
-    auto plpif_node = pRegTree_->get_value<lpif::node*>(lpif_reg::reg_p::to_entry_translator());
-    // exist node indicate test case defined at this path
-    if (!plpif_node) {
-        return false;
-    }
-
     type_ = test_type::case_;
 
     itSuit_ = nodePath.end() - 2;
@@ -171,17 +224,6 @@ bool Filter::trans2case() {
     return true;
 }
 bool Filter::trans2suit() {
-    bool bChildrenHasCase = false;
-    for (auto pr : *pRegTree_) {
-        if (pr.second.get_value<lpif::node*>(lpif_reg::reg_p::to_entry_translator())) {
-            bChildrenHasCase = true;
-            break;
-        }
-    }
-    if (!bChildrenHasCase) {
-        return false;
-    }
-
     type_ = test_type::suit;
 
     itSuit_ = nodePath.end() - 1;
@@ -192,10 +234,6 @@ bool Filter::trans2suit() {
     return true;
 }
 bool Filter::trans2subs() {
-    if (pRegTree_->empty()) {  // no children
-        return false;
-    }
-
     type_ = test_type::subs;
 
     std::string suit_name = ltz::str::join(itRoot_, nodePath.end(), "_") + "_*";
@@ -224,6 +262,16 @@ int main() {
 
     std::cout << "type: " << toStr(filter.get_type()) << "\n"
               << "filter: " << filter.get_filter() << std::endl;
+
+    if (filter.get_node_type() != filter.get_type() || filter.get_type() == test_type::mix) {
+        std::cout << "\033[33mwarnning:\033[0m ";
+        if (filter.get_type() == test_type::mix) {
+            std::cout << "type is: " << toStr(filter.get_type()) << ", which may not precise\n";
+        } else {
+            std::cout << "this node type: " << toStr(filter.get_node_type()) << ", is not same as filter type: " << toStr(filter.get_type()) << "\n";
+        }
+        std::cout << "condider use . to case; .. to suit; , to subs; ,, to mix " << std::endl;
+    }
 
     switch (filter.get_type()) {
         case test_type::all:

@@ -26,6 +26,7 @@ class Filter {
     using lpif_reg = ltz::proc_init::fn_reg;
     /* construct helper */
    private:
+    test_type parse_node_type();
     bool trans2all();
     bool trans2case();
     bool trans2suit();
@@ -38,10 +39,14 @@ class Filter {
     bool ready() const;
     std::string get_filter() const;
     test_type get_type() const;
+    test_type get_node_type() const;
 
    private:
     std::string filter_;
+    /* type to filter */
     test_type type_{test_type::unknown};
+    /* type the node is */
+    test_type node_type_{test_type::unknown};
     bool bReady_{false};
 
     /* helper */
