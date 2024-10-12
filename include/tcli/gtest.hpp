@@ -26,7 +26,8 @@ struct node : public basic_node {
 // declare
 /*
     @brief Define a test case.
-    @param ... Variadic that specify case path. Last two params indicate suit name and case name, while remaider combine to path.
+    @param ... Variadic that specify case path. Last two params indicate suit name and case name, while remaider combine
+   to path.
     @note For test defined case, specify path to case when tcli.
         For test suit, specify path to suit when tcli.
         For test suit recursively, specify path not point to suit node.
@@ -49,9 +50,13 @@ struct node : public basic_node {
 #define _TCLI_GTEST_CALL_TYPE_CASE_INST ::tcli::gtest::node::test_type::case_
 
 #define _TCLI_GTEST_GEN_SUIT_NAME(suit, ...) LTZ_PP_VA_CAT_WITH_UNDERLINE(__VA_ARGS__, suit)
-#define _TCLI_GTEST_VA_GET_SUIT(...) BOOST_PP_VARIADIC_ELEM(BOOST_PP_SUB(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), 2), __VA_ARGS__)
-#define _TCLI_GTEST_VA_GET_CASE(...) BOOST_PP_VARIADIC_ELEM(BOOST_PP_SUB(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), 1), __VA_ARGS__)
-#define _TCLI_GTEST_VA_GET_PATH(...) BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_FIRST_N(BOOST_PP_SUB(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), 2), BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
+#define _TCLI_GTEST_VA_GET_SUIT(...) \
+    BOOST_PP_VARIADIC_ELEM(BOOST_PP_SUB(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), 2), __VA_ARGS__)
+#define _TCLI_GTEST_VA_GET_CASE(...) \
+    BOOST_PP_VARIADIC_ELEM(BOOST_PP_SUB(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), 1), __VA_ARGS__)
+#define _TCLI_GTEST_VA_GET_PATH(...)        \
+    BOOST_PP_SEQ_ENUM(BOOST_PP_SEQ_FIRST_N( \
+        BOOST_PP_SUB(BOOST_PP_VARIADIC_SIZE(__VA_ARGS__), 2), BOOST_PP_VARIADIC_TO_SEQ(__VA_ARGS__)))
 
 
 // test define
@@ -61,9 +66,15 @@ struct node : public basic_node {
     }                                                                              \
     LTZ_PI_FN_DEF_INIT(tcli, __VA_ARGS__, suit, case) {}                           \
     LTZ_PI_FN_DEF_CLEAN(tcli, __VA_ARGS__, suit, case) {}                          \
-    LTZ_PI_FN_DEF_MAIN(tcli, __VA_ARGS__, suit, case) {}                           \
+    LTZ_PI_FN_DEF_MAIN(tcli, __VA_ARGS__, suit, case) {                            \
+        return 0;                                                                  \
+    }                                                                              \
     TEST(_TCLI_GTEST_GEN_SUIT_NAME(suit, __VA_ARGS__), case)
-#define _TCLI_GTEST_FN_II(...) _TCLI_GTEST_FN_III(_TCLI_GTEST_VA_GET_SUIT(__VA_ARGS__), _TCLI_GTEST_VA_GET_CASE(__VA_ARGS__), _TCLI_GTEST_VA_GET_PATH(__VA_ARGS__))
+
+#define _TCLI_GTEST_FN_II(...)                                                                     \
+    _TCLI_GTEST_FN_III(_TCLI_GTEST_VA_GET_SUIT(__VA_ARGS__), _TCLI_GTEST_VA_GET_CASE(__VA_ARGS__), \
+        _TCLI_GTEST_VA_GET_PATH(__VA_ARGS__))
+
 #define _TCLI_GTEST_FN_I(...) _TCLI_GTEST_FN_II(gtest, __VA_ARGS__)
 
 #endif
